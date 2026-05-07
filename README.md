@@ -347,7 +347,3 @@ type BootstrapSummary = {
   failed: number;
 };
 ```
-
-## License
-
-MIT
