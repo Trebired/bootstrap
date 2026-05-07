@@ -6,7 +6,6 @@ This project follows semantic versioning once published.
 
 ## 0.1.0
 
-- Renamed the package from `@trebired/loader` to `@trebired/bootstrap`.
 - Added a `bootstrap()` public API.
 - Added grouped scan options under `scan.dirs` and `scan.files`.
 - Added safe default exclusion for `node_modules`, with explicit opt-in through `scan.dirs.allowNodeModules`.
