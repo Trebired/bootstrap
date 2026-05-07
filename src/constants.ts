@@ -1,0 +1,14 @@
+const BOOTSTRAP_LOG_GROUP = "bootstrap";
+const DEFAULT_LAST_SUFFIX = "a";
+const IMPORT_REVISION_PARAM = "bootstrap_v";
+
+const VERBOSE_ENV_KEYS = Object.freeze([
+  "TREBIRED_BOOTSTRAP_VERBOSE",
+]);
+
+export {
+  BOOTSTRAP_LOG_GROUP,
+  DEFAULT_LAST_SUFFIX,
+  IMPORT_REVISION_PARAM,
+  VERBOSE_ENV_KEYS,
+};

@@ -1,0 +1,57 @@
+{
+  "name": "@trebired/bootstrap",
+  "version": "0.1.0",
+  "description": "Convention-based backend bootstrapper that discovers ordered bootstrap modules, injects dependencies by parameter name, and runs them deterministically.",
+  "license": "MIT",
+  "keywords": [
+    "bootstrap",
+    "backend",
+    "node",
+    "bun",
+    "dependency-injection"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trebired/bootstrap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/trebired/bootstrap/issues"
+  },
+  "homepage": "https://github.com/trebired/bootstrap#readme",
+  "type": "module",
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.0.0"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "bun@1.3.12",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "demo": "bun run examples/dummy.ts",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.4",
+    "@types/node": "^24.10.1",
+    "typescript": "^6.0.2"
+  }
+}
