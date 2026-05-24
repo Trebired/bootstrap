@@ -13,6 +13,8 @@ export {
 export type {
   BootstrapDirScanOptions,
   BootstrapFileScanOptions,
+  BootstrapGenericLogMethod,
+  BootstrapLogEvent,
   BootstrapLogger,
   BootstrapOptions,
   BootstrapScanOptions,

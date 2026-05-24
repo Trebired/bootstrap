@@ -1,13 +1,33 @@
 type BootstrapLogMethod = (group: string, message: string, metadata?: unknown) => unknown;
 
-type BootstrapLogger = {
-  info?: BootstrapLogMethod;
-  warn?: BootstrapLogMethod;
-  error?: BootstrapLogMethod;
-  fail?: BootstrapLogMethod;
+type BootstrapLogEvent = {
+  group: string;
+  level: "error" | "fail" | "info" | "warn";
+  message: string;
+  metadata?: unknown;
 };
 
-type NormalizedBootstrapLogger = Required<BootstrapLogger>;
+type BootstrapGenericLogMethod = (...args: unknown[]) => unknown;
+
+type BootstrapLogger = ((
+  event: BootstrapLogEvent,
+) => unknown) | {
+  [key: string]: unknown;
+  error?: BootstrapLogMethod | BootstrapGenericLogMethod;
+  fail?: BootstrapLogMethod | BootstrapGenericLogMethod;
+  fatal?: BootstrapGenericLogMethod;
+  info?: BootstrapLogMethod | BootstrapGenericLogMethod;
+  log?: BootstrapGenericLogMethod;
+  warn?: BootstrapLogMethod | BootstrapGenericLogMethod;
+  write?: BootstrapGenericLogMethod;
+};
+
+type NormalizedBootstrapLogger = {
+  error: BootstrapLogMethod;
+  fail: BootstrapLogMethod;
+  info: BootstrapLogMethod;
+  warn: BootstrapLogMethod;
+};
 
 type SuffixRules = {
   lastSuffix?: string;
@@ -76,6 +96,8 @@ export type {
   BootstrapDirScanOptions,
   BootstrapExportShape,
   BootstrapFileScanOptions,
+  BootstrapGenericLogMethod,
+  BootstrapLogEvent,
   BootstrapHandler,
   BootstrapLogger,
   BootstrapLogMethod,

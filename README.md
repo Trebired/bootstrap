@@ -18,7 +18,13 @@ npm install @trebired/bootstrap
 
 ```ts
 import { bootstrap } from "@trebired/bootstrap";
-import { log } from "@trebired/logger";
+import { createLog } from "@trebired/logger";
+
+const log = createLog({
+  console: true,
+  quiet: true,
+  save: false,
+});
 
 await bootstrap({
   dir: "/srv/app/src/backend",
@@ -237,7 +243,13 @@ For safety, `node_modules` is excluded by default anywhere in the scan tree. If 
 
 ```ts
 import { bootstrap } from "@trebired/bootstrap";
-import { log } from "@trebired/logger";
+import { createLog } from "@trebired/logger";
+
+const log = createLog({
+  console: true,
+  quiet: true,
+  save: false,
+});
 
 const summary = await bootstrap({
   dir: "/srv/app/src/backend",
@@ -296,6 +308,8 @@ comes from `@trebired/logger`.
 
 If you pass `logger: log`, bootstrap will use that same style for its internal messages.
 
+If you do not pass a logger and `@trebired/logger` is installed in the host app, bootstrap will create a quiet console-only logger automatically before falling back to raw `console`.
+
 If you want bootstrap files themselves to receive the logger as a dependency, also pass it as a normal top-level dependency:
 
 ```ts
@@ -306,7 +320,7 @@ await bootstrap({
 });
 ```
 
-Custom loggers are supported too, as long as they follow this structure:
+Custom loggers can also use one of these shapes:
 
 ```ts
 type Logger = {
@@ -314,6 +328,21 @@ type Logger = {
   warn(group: string, message: string, metadata?: unknown): void;
   error(group: string, message: string, metadata?: unknown): void;
   fail(group: string, message: string, metadata?: unknown): void;
+};
+
+type Event = {
+  level: "info" | "warn" | "error" | "fail";
+  group: string;
+  message: string;
+  metadata?: unknown;
+};
+
+type EventLogger = (event: Event) => void;
+
+type SinkLogger = {
+  log?(event: Event): void;
+  write?(event: Event): void;
+  fatal?(message: string, metadata?: unknown): void;
 };
 ```
 
@@ -323,7 +352,9 @@ What those parts mean:
 - `message`: a short event description
 - `metadata`: optional extra data, usually an object
 
-If no logger is provided, bootstrap falls back to plain `console` output.
+Common logger objects such as `console`, pino-style level methods, or Winston-style sinks are also adapted as sensibly as possible.
+
+If no logger is provided and `@trebired/logger` is not installed, bootstrap falls back to plain `console` output.
 
 ## Example App
 
