@@ -144,6 +144,7 @@ async function bootstrap(options: BootstrapOptions): Promise<BootstrapSummary> {
   logPackageInitialized({
     adapter: cfg.loggerAdapter,
     fallback: "console",
+    group: BOOTSTRAP_LOG_GROUP,
     logger: cfg.logger,
     source: "@trebired/bootstrap",
   });

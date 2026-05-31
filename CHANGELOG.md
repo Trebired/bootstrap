@@ -6,7 +6,7 @@ This project follows semantic versioning once published.
 
 ## 1.0.0
 
-- Added a package startup log through `logger.loader` so `bootstrap()` always emits `@trebired/bootstrap initialized`.
+- Added a package startup log through the `bootstrap.initialize` group so `bootstrap()` always emits `@trebired/bootstrap initialized`.
 
 ## 0.2.0
 
