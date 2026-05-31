@@ -141,6 +141,12 @@ export default function keep(state) {
 
     await expect(bootstrap({ logger } as any)).rejects.toThrow("bootstrap-missing-dir");
     expect(rows[0]).toEqual({
+      level: "info",
+      group: "logger.loader",
+      message: "@trebired/bootstrap initialized",
+      data: undefined,
+    });
+    expect(rows[1]).toEqual({
       level: "fail",
       group: "bootstrap",
       message: "missing-dir",

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { logPackageInitialized } from "@trebired/logger-adapter";
 
 import { BOOTSTRAP_LOG_GROUP } from "../constants.js";
 import { resolveLogger } from "../logging.js";
@@ -140,6 +141,12 @@ function resolveRoots(args: {
 async function bootstrap(options: BootstrapOptions): Promise<BootstrapSummary> {
   const cfg = options && typeof options === "object" ? options : {} as BootstrapOptions;
   const logger = resolveLogger(cfg.logger, cfg.loggerAdapter);
+  logPackageInitialized({
+    adapter: cfg.loggerAdapter,
+    fallback: "console",
+    logger: cfg.logger,
+    source: "@trebired/bootstrap",
+  });
   const verbose = typeof cfg.verbose === "boolean" ? cfg.verbose : envVerbose();
   const dependencies = resolveDependencies(cfg);
   const scan = normalizeScanConfig(cfg.scan);

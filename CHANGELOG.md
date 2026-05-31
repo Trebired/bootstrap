@@ -4,6 +4,10 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.0.0
+
+- Added a package startup log through `logger.loader` so `bootstrap()` always emits `@trebired/bootstrap initialized`.
+
 ## 0.2.0
 
 - Switched package logger adaptation over to `@trebired/logger-adapter`.
