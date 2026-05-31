@@ -91,6 +91,30 @@ export default function connect(state) {
     expect(rows.some((entry) => entry.level === "info" && entry.group === "bootstrap" && entry.message === "load :: database/connect.1.ts")).toBe(true);
   });
 
+  test("supports explicit logger adapters for exact output shapes", async () => {
+    const dir = path.join(tempDir(), "src", "backend");
+    const rows: Array<{ line: string; severity: string }> = [];
+
+    writeModule(dir, "database/connect.1.ts", `
+export default function connect() {}
+`);
+
+    const summary = await bootstrap({
+      dir,
+      logger: rows,
+      loggerAdapter(logger, event) {
+        logger.push({
+          line: `${event.timestamp} :: ${event.group} :: ${event.message}`,
+          severity: event.level,
+        });
+      },
+      verbose: true,
+    } as any);
+
+    expect(summary).toEqual({ scanned: 1, loaded: 1, skipped: 0, failed: 0 });
+    expect(rows.some((entry) => entry.severity === "info" && entry.line.includes("bootstrap :: load :: database/connect.1.ts"))).toBe(true);
+  });
+
   test("supports grouped dir scanning rules and verbose skip logging", async () => {
     const dir = path.join(tempDir(), "src", "backend");
     const state = { events: [] as string[] };

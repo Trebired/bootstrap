@@ -4,6 +4,11 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 0.2.0
+
+- Switched package logger adaptation over to `@trebired/logger-adapter`.
+- Added the `loggerAdapter(logger, event)` option for callers who want exact control over the final emitted log structure.
+
 ## 0.1.0
 
 - Added a `bootstrap()` public API.

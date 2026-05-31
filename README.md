@@ -182,7 +182,7 @@ export function attach(dependencies) {
 
 There are no hardcoded dependency names. `server`, `io`, `app`, `config`, `db`, `log`, or any other name only exist if you pass them in.
 
-Reserved option keys are `dir`, `scan`, `verbose`, and `logger`. If you want your bootstrap files to receive a logger dependency, pass it as `log` and also set `logger: log` if you want bootstrap itself to use the same logger.
+Reserved option keys are `dir`, `scan`, `verbose`, `logger`, and `loggerAdapter`. If you want your bootstrap files to receive a logger dependency, pass it as `log` and also set `logger: log` if you want bootstrap itself to use the same logger.
 
 ## Scan Config
 
@@ -225,6 +225,7 @@ What each option means:
 - `scan.files.lastSuffix`: the suffix that runs last after numbered files
 - `verbose`: prints extra bootstrap diagnostics
 - `logger`: logger used by bootstrap's own internal messages
+- `loggerAdapter`: optional custom writer that controls the exact final emitted log shape
 
 Some concrete examples:
 
@@ -306,6 +307,8 @@ log.info("bootstrap", "startup complete", summary);
 
 comes from `@trebired/logger`.
 
+The runtime adaptation behind `logger` and `loggerAdapter` is powered by `@trebired/logger-adapter`.
+
 If you pass `logger: log`, bootstrap will use that same style for its internal messages.
 
 If you do not pass a logger and `@trebired/logger` is installed in the host app, bootstrap will create a quiet console-only logger automatically before falling back to raw `console`.
@@ -353,6 +356,24 @@ What those parts mean:
 - `metadata`: optional extra data, usually an object
 
 Common logger objects such as `console`, pino-style level methods, or Winston-style sinks are also adapted as sensibly as possible.
+
+If you want bootstrap to emit an exact custom shape, pass both `logger` and `loggerAdapter`:
+
+```ts
+await bootstrap({
+  dir: "/srv/app/src/backend",
+  logger: rows,
+  loggerAdapter(logger, event) {
+    logger.push({
+      when: event.timestamp,
+      scope: event.group,
+      severity: event.level,
+      text: event.message,
+      extra: event.metadata,
+    });
+  },
+});
+```
 
 If no logger is provided and `@trebired/logger` is not installed, bootstrap falls back to plain `console` output.
 

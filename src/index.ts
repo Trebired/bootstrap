@@ -16,6 +16,7 @@ export type {
   BootstrapGenericLogMethod,
   BootstrapLogEvent,
   BootstrapLogger,
+  BootstrapLoggerAdapter,
   BootstrapOptions,
   BootstrapScanOptions,
   BootstrapSummary,

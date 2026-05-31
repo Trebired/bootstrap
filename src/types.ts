@@ -1,33 +1,18 @@
-type BootstrapLogMethod = (group: string, message: string, metadata?: unknown) => unknown;
+import type {
+  LoggerAdapterEvent,
+  LoggerAdapterGenericLogMethod,
+  LoggerAdapterLogger,
+  LoggerAdapterLogMethod,
+  LoggerAdapterWriter,
+  NormalizedLoggerAdapter,
+} from "@trebired/logger-adapter";
 
-type BootstrapLogEvent = {
-  group: string;
-  level: "error" | "fail" | "info" | "warn";
-  message: string;
-  metadata?: unknown;
-};
-
-type BootstrapGenericLogMethod = (...args: unknown[]) => unknown;
-
-type BootstrapLogger = ((
-  event: BootstrapLogEvent,
-) => unknown) | {
-  [key: string]: unknown;
-  error?: BootstrapLogMethod | BootstrapGenericLogMethod;
-  fail?: BootstrapLogMethod | BootstrapGenericLogMethod;
-  fatal?: BootstrapGenericLogMethod;
-  info?: BootstrapLogMethod | BootstrapGenericLogMethod;
-  log?: BootstrapGenericLogMethod;
-  warn?: BootstrapLogMethod | BootstrapGenericLogMethod;
-  write?: BootstrapGenericLogMethod;
-};
-
-type NormalizedBootstrapLogger = {
-  error: BootstrapLogMethod;
-  fail: BootstrapLogMethod;
-  info: BootstrapLogMethod;
-  warn: BootstrapLogMethod;
-};
+type BootstrapLogMethod = LoggerAdapterLogMethod;
+type BootstrapGenericLogMethod = LoggerAdapterGenericLogMethod;
+type BootstrapLogger = LoggerAdapterLogger;
+type BootstrapLoggerAdapter = LoggerAdapterWriter;
+type NormalizedBootstrapLogger = NormalizedLoggerAdapter;
+type BootstrapLogEvent = LoggerAdapterEvent;
 
 type SuffixRules = {
   lastSuffix?: string;
@@ -57,6 +42,7 @@ type BootstrapOptions = {
   scan?: BootstrapScanOptions;
   verbose?: boolean;
   logger?: BootstrapLogger;
+  loggerAdapter?: BootstrapLoggerAdapter;
 } & Record<string, unknown>;
 
 type BootstrapSummary = {
@@ -100,6 +86,7 @@ export type {
   BootstrapLogEvent,
   BootstrapHandler,
   BootstrapLogger,
+  BootstrapLoggerAdapter,
   BootstrapLogMethod,
   BootstrapOptions,
   BootstrapScanOptions,

@@ -17,6 +17,7 @@ import { isDir, readFileCached, relFromRoot } from "../utils/files.js";
 const RESERVED_OPTION_KEYS = new Set([
   "dir",
   "logger",
+  "loggerAdapter",
   "scan",
   "verbose",
 ]);
@@ -138,7 +139,7 @@ function resolveRoots(args: {
 
 async function bootstrap(options: BootstrapOptions): Promise<BootstrapSummary> {
   const cfg = options && typeof options === "object" ? options : {} as BootstrapOptions;
-  const logger = resolveLogger(cfg.logger);
+  const logger = resolveLogger(cfg.logger, cfg.loggerAdapter);
   const verbose = typeof cfg.verbose === "boolean" ? cfg.verbose : envVerbose();
   const dependencies = resolveDependencies(cfg);
   const scan = normalizeScanConfig(cfg.scan);
