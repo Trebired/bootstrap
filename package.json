@@ -12,12 +12,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/trebired/bootstrap.git"
+    "url": "https://github.com/Trebired/bootstrap"
   },
   "bugs": {
-    "url": "https://github.com/trebired/bootstrap/issues"
+    "url": "https://github.com/Trebired/bootstrap/issues"
   },
-  "homepage": "https://github.com/trebired/bootstrap#readme",
+  "homepage": "https://github.com/Trebired/bootstrap#readme",
   "type": "module",
   "engines": {
     "node": ">=18",
