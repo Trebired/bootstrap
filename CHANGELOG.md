@@ -4,6 +4,11 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.1
+
+- Enforced the package `tb.code-discipline.ts` policy across `src`, `internal`, and other package-owned source folders, including synced import aliases and normalized `tsconfig` path metadata.
+- Kept the public bootstrap API and runtime behavior unchanged while bringing the codebase into the current Trebired discipline layout.
+
 ## 1.1.0
 
 - Added `createBootstrap()` as a first-class lifecycle runtime with explicit states for `idle`, `bootstrapping`, `ready`, `degrading`, `shutting_down`, `stopped`, and `failed`.
