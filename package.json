@@ -1,10 +1,12 @@
 {
   "name": "@trebired/bootstrap",
-  "version": "1.0.0",
-  "description": "Convention-based backend bootstrapper that discovers ordered bootstrap modules, injects dependencies by parameter name, and runs them deterministically.",
+  "version": "1.1.0",
+  "description": "Generic application lifecycle orchestrator with ordered bootstrap discovery, readiness control, graceful degradation, and shutdown.",
   "license": "MIT",
   "keywords": [
     "bootstrap",
+    "lifecycle",
+    "shutdown",
     "backend",
     "node",
     "bun",

@@ -1,5 +1,6 @@
 export { BOOTSTRAP_LOG_GROUP, VERBOSE_ENV_KEYS } from "./constants.js";
 export { bootstrap } from "./core/bootstrap.js";
+export { createBootstrap } from "./core/runtime.js";
 export { default } from "./core/bootstrap.js";
 export {
   DEFAULT_LAST_SUFFIX,
@@ -11,14 +12,34 @@ export {
   compareFiles,
 } from "./suffixes.js";
 export type {
+  BootstrapContext,
+  BootstrapDegradeContext,
+  BootstrapDegradeOptions,
+  BootstrapDegradeReport,
   BootstrapDirScanOptions,
+  BootstrapDisposable,
   BootstrapFileScanOptions,
   BootstrapGenericLogMethod,
+  BootstrapLifecycleEvent,
+  BootstrapLifecycleListener,
+  BootstrapLifecycleOptions,
   BootstrapLogEvent,
   BootstrapLogger,
   BootstrapLoggerAdapter,
+  BootstrapOwnedResourceHandle,
+  BootstrapOwnedResourceOptions,
   BootstrapOptions,
+  BootstrapPhase,
+  BootstrapRunReport,
+  BootstrapRuntime,
   BootstrapScanOptions,
+  BootstrapShutdownContext,
+  BootstrapShutdownOptions,
+  BootstrapShutdownReport,
+  BootstrapShutdownStepResult,
+  BootstrapSnapshot,
+  BootstrapSubsystemDefinition,
   BootstrapSummary,
+  LifecycleState,
   SuffixRules,
 } from "./types.js";

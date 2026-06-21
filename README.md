@@ -1,30 +1,32 @@
 # @trebired/bootstrap
 
-A backend bootstrap loader for Bun and Node.js that discovers modules, runs them in order, and injects dependencies by parameter name.
+`@trebired/bootstrap` is a generic application lifecycle orchestrator for Bun and Node.js.
 
-`@trebired/bootstrap` scans a bootstrap directory, finds ordered bootstrap files, injects your dependencies by parameter name, and runs each bootstrap module in a stable order.
+It still supports the original ordered startup scan model through `bootstrap()`, and now also provides a first-class runtime API through `createBootstrap()` so applications can:
+
+- bring subsystems up in a safe order
+- mark themselves ready
+- degrade readiness and availability before shutdown
+- stop background activity
+- tear down owned resources in reverse dependency order
+- shut down cleanly without depending on process exit
+
+The package stays framework-agnostic. It does not assume HTTP, queues, workers, or a specific server runtime.
 
 ## Install
 
 Runtime support: Bun 1+ and Node.js 18+.
 
-Bun can import `.ts` and `.mts` bootstrap files directly. Node.js users should point `dir` at compiled ESM `.js` or `.mjs` output, or run Node with a TypeScript loader.
-
 ```sh
 npm install @trebired/bootstrap
 ```
 
-## Quick Start
+## Two Ways To Use It
+
+Use `bootstrap()` when you want the existing one-shot startup behavior:
 
 ```ts
 import { bootstrap } from "@trebired/bootstrap";
-import { createLog } from "@trebired/logger";
-
-const log = createLog({
-  console: true,
-  quiet: true,
-  save: false,
-});
 
 await bootstrap({
   dir: "/srv/app/src/backend",
@@ -35,158 +37,334 @@ await bootstrap({
 });
 ```
 
-`dir` is required. There is no fallback search path.
-
-## What It Loads
-
-Bootstrap starts at the `dir` you pass in and only scans directories under that path.
-
-It does this:
-
-- reads the first-level child directories inside `dir`
-- walks those directories recursively
-- only considers `.js`, `.mjs`, `.ts`, and `.mts` files
-- only runs files whose names end with a numeric suffix like `.1`, `.2`, `.3`, or a final suffix like `.a`
-
-It does not do this:
-
-- it does not scan files sitting directly in the root `dir`
-- it does not load `.cjs` files
-- it does not guess names like `server`, `io`, or `app`
-
-Example:
-
-```txt
-src/backend/
-  db/
-    connect.1.ts
-    migrate.2.ts
-    ready.a.ts
-    helper.ts
-  http/
-    middleware.1.ts
-  jobs/
-    queue.1.ts
-  root-file.1.ts
-```
-
-Loaded:
-
-- `db/connect.1.ts`
-- `db/migrate.2.ts`
-- `db/ready.a.ts`
-- `http/middleware.1.ts`
-- `jobs/queue.1.ts`
-
-Ignored:
-
-- `db/helper.ts`
-  It has no ordering suffix.
-- `root-file.1.ts`
-  It sits directly in `dir`, and bootstrap only starts from child directories.
-
-Order is simple:
-
-- numbered files run first in ascending order
-- the final suffix runs after the numbered files
-
-With the default final suffix, `ready.a.ts` runs after `connect.1.ts` and `migrate.2.ts`.
-
-## Module Shapes
-
-Each bootstrap file must be an ESM module and can export one of these shapes:
+Use `createBootstrap()` when you want a stateful lifecycle runtime with graceful degradation and shutdown:
 
 ```ts
-export default function attach(db, log) {
-  log.info("db", "connected");
-}
-```
+import { createBootstrap } from "@trebired/bootstrap";
 
-```ts
-export function attach(dependencies) {
-  dependencies.log.info("http", "middleware attached");
-}
-```
-
-```ts
-export default {
-  attach(config, db) {
-    db.configure(config.database);
+const runtime = createBootstrap({
+  lifecycle: {
+    shutdownTimeoutMs: 10_000,
   },
+  subsystems: [
+    {
+      id: "db",
+      async bootstrap(context) {
+        const connection = await connectDatabase(context.deps.config.databaseUrl);
+        context.own(connection, { name: "db-connection" });
+      },
+    },
+    {
+      id: "http",
+      dependsOn: ["db"],
+      async bootstrap(context) {
+        const server = context.deps.http.createServer(context.deps.app);
+        await new Promise((resolve) => server.listen(3000, resolve));
+        context.own(server, { name: "http-server" });
+      },
+      async degrade(context) {
+        context.readiness.disable("draining");
+        context.availability.disable("draining");
+      },
+      async shutdown() {
+        // Optional subsystem-specific shutdown logic before owned resources close.
+      },
+    },
+  ],
+  config,
+  http,
+  app,
+});
+
+await runtime.bootstrap();
+await runtime.degrade({ reason: "deployment" });
+await runtime.shutdown({ reason: "deployment" });
+```
+
+## Lifecycle Model
+
+The runtime exposes explicit lifecycle states:
+
+- `idle`
+- `bootstrapping`
+- `ready`
+- `degrading`
+- `shutting_down`
+- `stopped`
+- `failed`
+
+Readiness and availability are tracked separately from the state machine, so an application can become unavailable before it fully stops.
+
+Common flow:
+
+1. `idle`
+2. `bootstrapping`
+3. `ready`
+4. `degrading`
+5. `shutting_down`
+6. `stopped`
+
+If startup fails after some subsystems already started, the runtime moves through `failed` and then cleans up what was already started.
+
+## Programmatic Subsystems
+
+Startup and teardown belong to the same subsystem definition:
+
+```ts
+import { createBootstrap } from "@trebired/bootstrap";
+
+const runtime = createBootstrap({
+  subsystems: [
+    {
+      id: "metrics",
+      async bootstrap(context) {
+        const interval = setInterval(flushMetrics, 5_000);
+        context.own(
+          {
+            stop() {
+              clearInterval(interval);
+            },
+          },
+          { name: "metrics-interval" },
+        );
+      },
+      async shutdown() {
+        await flushMetrics();
+      },
+    },
+  ],
+});
+```
+
+Subsystem fields:
+
+- `id`: required stable identifier
+- `dependsOn`: optional dependency list used for ordered startup and reverse-order shutdown
+- `bootstrap(context)`: startup hook
+- `degrade(context)`: optional pre-shutdown degradation hook
+- `shutdown(context)`: optional teardown hook
+- `order`: optional numeric tie-breaker when no dependency relationship exists
+
+## Runtime API
+
+```ts
+import { createBootstrap } from "@trebired/bootstrap";
+
+const runtime = createBootstrap(options);
+```
+
+Runtime methods:
+
+- `runtime.registerSubsystem(subsystem)`
+- `runtime.bootstrap()`
+- `runtime.degrade({ reason? })`
+- `runtime.shutdown({ reason?, timeoutMs? })`
+- `runtime.getState()`
+- `runtime.getSnapshot()`
+- `runtime.isReady()`
+- `runtime.isAvailable()`
+- `runtime.onEvent(listener)`
+
+`bootstrap()` on the runtime returns a structured report:
+
+```ts
+type BootstrapRunReport = {
+  state: "ready" | "degrading";
+  readiness: boolean;
+  availability: boolean;
+  summary: {
+    scanned: number;
+    loaded: number;
+    skipped: number;
+    failed: number;
+  };
+  startedSubsystems: string[];
+  failedSubsystems: string[];
 };
 ```
 
-CommonJS patterns such as `module.exports = ...` are not supported.
-
-About the `attach` name:
-
-- if you use a named export hook, it must be named `attach`
-- if you use a default exported object hook, the method must be named `attach`
-- if you use a default exported function, the function does not need to be named `attach`
-
-So this works:
+`shutdown()` returns a structured teardown report:
 
 ```ts
-export default function startServer(app, log) {
-  log.info("http", "server starting");
+type BootstrapShutdownReport = {
+  state: "stopped";
+  timeoutMs: number | null;
+  reason?: string;
+  steps: Array<{
+    target: "subsystem" | "resource";
+    phase: "degrade" | "shutdown" | "cleanup";
+    subsystemId: string;
+    name: string;
+    status: "completed" | "failed" | "timed_out" | "forced";
+    durationMs: number;
+    error?: unknown;
+  }>;
+  completed: string[];
+  failed: string[];
+  timedOut: string[];
+  forced: string[];
+};
+```
+
+Repeated shutdown calls are safe and idempotent. If shutdown is already in progress, callers get the same in-flight result.
+
+## Graceful Degradation
+
+Applications often need to stop accepting new work before they fully shut down.
+
+`degrade()` is the explicit transition for that:
+
+```ts
+await runtime.degrade({ reason: "rolling-update" });
+```
+
+That lets your app:
+
+- fail readiness checks
+- mark itself unavailable
+- reject new work
+- drain in-flight work in your own subsystem hooks
+
+The library stays generic: it tracks readiness and availability, emits lifecycle events, and leaves health endpoints, request rejection, and drain semantics to your application code.
+
+Inside subsystem hooks you can control readiness directly:
+
+```ts
+{
+  id: "http",
+  async degrade(context) {
+    context.readiness.disable("draining");
+    context.availability.disable("draining");
+    await stopAcceptingNewRequests();
+    await drainInflightRequests();
+  },
 }
 ```
 
-and this works:
+## Owned Resources And Disposables
+
+Bootstrap contexts make cleanup registration explicit and local to the subsystem that created the resource.
+
+Use `context.own(...)` for a disposable object:
 
 ```ts
-export function attach(app, log) {
-  log.info("http", "routes attached");
+{
+  id: "worker",
+  async bootstrap(context) {
+    const worker = startBackgroundWorker();
+    context.own(worker, { name: "jobs-worker" });
+  },
 }
 ```
 
-but this does not:
+Recognized cleanup methods include:
+
+- `dispose()`
+- `close()`
+- `stop()`
+- `terminate()`
+- `disconnect()`
+- `destroy()`
+- `abort()`
+- `kill()`
+
+Use `context.addCleanup(...)` for plain functions:
 
 ```ts
-export function start(app, log) {
-  log.info("http", "routes attached");
+{
+  id: "watcher",
+  async bootstrap(context) {
+    const stopWatching = startFileWatcher();
+    context.addCleanup(stopWatching, { name: "file-watcher" });
+  },
 }
 ```
 
-## How Dependencies Work
-
-Every non-option top-level key you pass into `bootstrap()` becomes injectable by parameter name.
-
-This:
+You can also override both graceful and forced cleanup behavior:
 
 ```ts
-await bootstrap({
-  dir: "/srv/app/src/backend",
-  config,
-  db,
-  log,
-  logger: log,
+context.own(server, {
+  name: "http-server",
+  cleanup: async (value) => {
+    await closeServerGracefully(value as Server);
+  },
+  forceCleanup: async (value) => {
+    await destroyServerHard(value as Server);
+  },
 });
 ```
 
-lets a bootstrap file do this:
+Owned resources are cleaned up after the subsystem's `shutdown()` hook, in reverse registration order.
+
+## Shutdown Timeouts And Forced Teardown
+
+Set a default timeout for the runtime:
 
 ```ts
-export default function connect(config, db, log) {
-  log.info("db", "connected");
-}
+const runtime = createBootstrap({
+  lifecycle: {
+    shutdownTimeoutMs: 15_000,
+  },
+  subsystems: [...],
+});
 ```
 
-If a bootstrap file wants the whole dependency object, use `dependencies` or `deps`:
+Or override it for a single shutdown call:
 
 ```ts
-export function attach(dependencies) {
-  dependencies.log.info("http", "middleware attached");
-}
+await runtime.shutdown({
+  reason: "sigterm",
+  timeoutMs: 5_000,
+});
 ```
 
-There are no hardcoded dependency names. `server`, `io`, `app`, `config`, `db`, `log`, or any other name only exist if you pass them in.
+If cleanup runs past the timeout:
 
-Reserved option keys are `dir`, `scan`, `verbose`, `logger`, and `loggerAdapter`. If you want your bootstrap files to receive a logger dependency, pass it as `log` and also set `logger: log` if you want bootstrap itself to use the same logger.
+- the report marks the step as `timed_out`
+- if a force cleanup handler exists, the step is reported as `forced`
+- a `shutdown:forced` lifecycle event is emitted
 
-## Scan Config
+This makes it clear what stopped cleanly and what had to be forced.
 
-The public scan config is grouped so it is clearer what applies to directories and what applies to files.
+## Structured Lifecycle Events
+
+Subscribe to lifecycle events through `runtime.onEvent(...)` or `lifecycle.onEvent` in the constructor.
+
+The runtime emits structured events for:
+
+- bootstrap start, finish, and failure
+- readiness enabled and disabled
+- shutdown requested
+- hook start, finish, and failure
+- forced shutdown
+- final stopped state
+
+Example:
+
+```ts
+const runtime = createBootstrap({
+  lifecycle: {
+    onEvent(event) {
+      console.log(event.type, event.state, event.subsystemId);
+    },
+  },
+  subsystems: [...],
+});
+```
+
+## Directory Scan Mode
+
+The original directory-based startup loader remains intact.
+
+`bootstrap()` still:
+
+- scans first-level child directories under `dir`
+- walks them recursively
+- loads only `.js`, `.mjs`, `.ts`, and `.mts`
+- runs only ordered files like `.1`, `.2`, and the final suffix such as `.a`
+- injects non-option top-level keys by parameter name
+
+Example:
 
 ```ts
 await bootstrap({
@@ -199,203 +377,94 @@ await bootstrap({
     dirs: {
       include: ["db", "http", "jobs"],
       exclude: ["legacy", "db/fixtures"],
-      allowNodeModules: false,
     },
     files: {
-      include: ["connect.1.ts", "http/routes.2.ts"],
-      exclude: ["types.d.ts", "http/legacy.3.ts"],
       excludeSuffixes: ["spec", "test", "d"],
       lastSuffix: "a",
     },
   },
-  verbose: true,
 });
 ```
 
-What each option means:
+Reserved option keys are:
 
-- `dir`: required root directory to scan
-- `config`, `db`, `log`, and other non-option keys: dependencies that bootstrap files can request by parameter name
-- `scan.dirs.include`: first-level folders under `dir` to start scanning from
-- `scan.dirs.exclude`: directories to skip by basename or relative path
-- `scan.dirs.allowNodeModules`: `false` by default, so `node_modules` is skipped unless you explicitly allow it
-- `scan.files.include`: optional allowlist for files, matched by basename or relative path
-- `scan.files.exclude`: files to skip by basename or relative path
-- `scan.files.excludeSuffixes`: suffixes to ignore, such as `spec`, `test`, or `d`
-- `scan.files.lastSuffix`: the suffix that runs last after numbered files
-- `verbose`: prints extra bootstrap diagnostics
-- `logger`: logger used by bootstrap's own internal messages
-- `loggerAdapter`: optional custom writer that controls the exact final emitted log shape
+- `dir`
+- `scan`
+- `verbose`
+- `logger`
+- `loggerAdapter`
+- `lifecycle`
+- `subsystems`
 
-Some concrete examples:
+Everything else remains injectable as a dependency.
 
-- `scan.dirs.include: ["db", "http"]` means bootstrap starts only from `/srv/app/src/backend/db` and `/srv/app/src/backend/http`
-- `scan.dirs.exclude: ["legacy", "db/fixtures"]` skips a directory literally named `legacy`, and also skips the specific relative path `db/fixtures`
-- `scan.dirs.allowNodeModules: true` is the explicit opt-in if you really want bootstrap to scan a `node_modules` directory
-- `scan.files.include: ["routes.2.ts", "http/server.a.ts"]` matches by either basename or relative path
-- `scan.files.exclude: ["types.d.ts", "http/legacy.3.ts"]` also matches by either basename or relative path
-- `scan.files.lastSuffix: "a"` means `ready.a.ts` runs after `connect.1.ts` and `migrate.2.ts`
+## Lifecycle-Aware Scanned Modules
 
-When `scan.files.include` is present, it acts as an allowlist. Only matching supported files are considered, and only attachable files actually run.
+Scanned modules can stay in the old attach-function form, or they can use the newer subsystem model.
 
-For safety, `node_modules` is excluded by default anywhere in the scan tree. If you really want to scan it, set `scan.dirs.allowNodeModules: true`.
-
-## Full API Example
+Example scanned subsystem module:
 
 ```ts
-import { bootstrap } from "@trebired/bootstrap";
-import { createLog } from "@trebired/logger";
-
-const log = createLog({
-  console: true,
-  quiet: true,
-  save: false,
-});
-
-const summary = await bootstrap({
-  dir: "/srv/app/src/backend",
-  config,
-  db,
-  log,
-  cache,
-  http,
-  scan: {
-    dirs: {
-      include: ["db", "http", "jobs"],
-      exclude: ["legacy", "jobs/fixtures"],
-      allowNodeModules: false,
-    },
-    files: {
-      include: ["connect.1.ts", "http/routes.2.ts", "jobs/ready.a.ts"],
-      exclude: ["types.d.ts", "http/legacy.3.ts"],
-      excludeSuffixes: ["spec", "test", "d"],
-      lastSuffix: "a",
-    },
+export default {
+  id: "http",
+  dependsOn: ["db"],
+  async bootstrap(context) {
+    const server = context.deps.http.createServer(context.deps.app);
+    await new Promise((resolve) => server.listen(3000, resolve));
+    context.own(server, { name: "http-server" });
   },
-  verbose: true,
-  logger: log,
-});
-
-log.info("bootstrap", "startup complete", summary);
+  async degrade(context) {
+    context.readiness.disable("draining");
+    context.availability.disable("draining");
+  },
+  async shutdown() {
+    await flushPendingLogs();
+  },
+};
 ```
 
-That example means:
+or:
 
-- bootstrap scans `/srv/app/src/backend`
-- only the `db`, `http`, and `jobs` root folders are used as scan starting points
-- `legacy` directories and `jobs/fixtures` are skipped
-- only files that match the file allowlist are considered
-- files ending in `.spec`, `.test`, or `.d` are ignored
-- files ending in `.a` run after numbered files
-- bootstrap's internal diagnostics are sent through the same `log` object
+```ts
+export const subsystem = {
+  id: "jobs",
+  async bootstrap(context) {
+    const consumer = startQueueConsumer();
+    context.own(consumer, { name: "queue-consumer" });
+  },
+  async shutdown() {
+    await drainQueue();
+  },
+};
+```
+
+These scanned subsystem modules work with `createBootstrap({ dir, ...deps })`.
+
+## Legacy Compatibility
+
+Existing bootstrap-only consumers keep working:
+
+- `bootstrap(options)` still returns the original summary object
+- attach-style scanned modules still work
+- dependency injection by parameter name is unchanged
+- scan rules and logger behavior stay available
+
+If you only need one-shot startup, nothing has to change.
 
 ## Logger Support
 
-`@trebired/bootstrap` works best with `@trebired/logger`, and that is the recommended logger.
+`logger` and `loggerAdapter` still behave the same as before for bootstrap's own logging.
 
-Why we recommend it:
+The runtime also emits structured lifecycle events through `onEvent`, which is the preferred observability surface for orchestration state.
 
-- it is simple
-- it already matches bootstrap's expected method shape
-- it keeps application logs and bootstrap logs in one consistent format
+## Example Files
 
-The logger style:
+Examples live under [examples](./examples):
 
-```ts
-log.info("bootstrap", "startup complete", summary);
-```
+- [examples/dummy.ts](./examples/dummy.ts)
+- [examples/lifecycle.ts](./examples/lifecycle.ts)
+- [examples/server.js](./examples/server.js)
 
-comes from `@trebired/logger`.
+## License
 
-The runtime adaptation behind `logger` and `loggerAdapter` is powered by `@trebired/logger-adapter`.
-
-If you pass `logger: log`, bootstrap will use that same style for its internal messages.
-
-If you do not pass a logger and `@trebired/logger` is installed in the host app, bootstrap will create a quiet console-only logger automatically before falling back to raw `console`.
-
-If you want bootstrap files themselves to receive the logger as a dependency, also pass it as a normal top-level dependency:
-
-```ts
-await bootstrap({
-  dir,
-  log,
-  logger: log,
-});
-```
-
-Custom loggers can also use one of these shapes:
-
-```ts
-type Logger = {
-  info(group: string, message: string, metadata?: unknown): void;
-  warn(group: string, message: string, metadata?: unknown): void;
-  error(group: string, message: string, metadata?: unknown): void;
-  fail(group: string, message: string, metadata?: unknown): void;
-};
-
-type Event = {
-  level: "info" | "warn" | "error" | "fail";
-  group: string;
-  message: string;
-  metadata?: unknown;
-};
-
-type EventLogger = (event: Event) => void;
-
-type SinkLogger = {
-  log?(event: Event): void;
-  write?(event: Event): void;
-  fatal?(message: string, metadata?: unknown): void;
-};
-```
-
-What those parts mean:
-
-- `group`: the category or source, such as `"bootstrap"` or `"http"`
-- `message`: a short event description
-- `metadata`: optional extra data, usually an object
-
-Common logger objects such as `console`, pino-style level methods, or Winston-style sinks are also adapted as sensibly as possible.
-
-If you want bootstrap to emit an exact custom shape, pass both `logger` and `loggerAdapter`:
-
-```ts
-await bootstrap({
-  dir: "/srv/app/src/backend",
-  logger: rows,
-  loggerAdapter(logger, event) {
-    logger.push({
-      when: event.timestamp,
-      scope: event.group,
-      severity: event.level,
-      text: event.message,
-      extra: event.metadata,
-    });
-  },
-});
-```
-
-If no logger is provided and `@trebired/logger` is not installed, bootstrap falls back to plain `console` output.
-
-## Example App
-
-There is a working example in [examples/server.js](./examples/server.js) with matching bootstrap files under [examples/server_bootstrap](./examples/server_bootstrap).
-
-That example shows:
-
-- a small app object being built in ordered bootstrap files
-- top-level dependency injection
-- using the same `log` object for both injected logging and bootstrap's own internal logging
-
-## Return Value
-
-`bootstrap()` returns a summary object:
-
-```ts
-type BootstrapSummary = {
-  scanned: number;
-  loaded: number;
-  skipped: number;
-  failed: number;
-};
-```
+MIT

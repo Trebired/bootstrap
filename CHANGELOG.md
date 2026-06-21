@@ -4,6 +4,16 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.0
+
+- Added `createBootstrap()` as a first-class lifecycle runtime with explicit states for `idle`, `bootstrapping`, `ready`, `degrading`, `shutting_down`, `stopped`, and `failed`.
+- Added subsystem registration with paired `bootstrap`, `degrade`, and `shutdown` hooks plus dependency-aware ordering.
+- Added owned-resource and disposable cleanup through bootstrap contexts with `own(...)` and `addCleanup(...)`.
+- Added graceful degradation, safe repeated shutdown calls, shutdown timeouts, forced cleanup reporting, and bootstrap-failure cleanup.
+- Added structured lifecycle events for bootstrap, readiness, shutdown, hook execution, forced shutdown, and final stopped state.
+- Added lifecycle-aware scanned module support while keeping legacy attach-style bootstrap scanning compatible.
+- Added lifecycle documentation, examples, and teardown-focused test coverage.
+
 ## 1.0.0
 
 - Added a package startup log through the `bootstrap.initialize` group so `bootstrap()` always emits `@trebired/bootstrap initialized`.
