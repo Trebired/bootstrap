@@ -1,30 +1,114 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": false,
+    "esModuleInterop": true,
     "lib": [
       "ES2020"
     ],
-    "strict": false,
-    "allowJs": false,
-    "checkJs": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "noEmit": true,
+    "paths": {
+      "#0jlu4wac9xrt": [
+        "./internal/core/bootstrap.ts"
+      ],
+      "#2g6zs1tw5mep": [
+        "./internal/core/discovery.ts"
+      ],
+      "#3z0wn9c7qkaf": [
+        "./internal/params/extract.ts"
+      ],
+      "#4v8yb2n6hcmd": [
+        "./internal/params/resolve.ts"
+      ],
+      "#5m1qr8zj0sdu": [
+        "./internal/scan/walk.ts"
+      ],
+      "#0co91ca40kwl": [
+        "./src/params/resolve.ts"
+      ],
+      "#63np0sf1s6f9": [
+        "./src/types.ts"
+      ],
+      "#6pk4xe2v9lab": [
+        "./internal/core/runtime.ts"
+      ],
+      "#7iidjfwwxm9c": [
+        "./src/utils/values.ts"
+      ],
+      "#7l8fl6xuos5s": [
+        "./src/index.ts"
+      ],
+      "#7vfj5fhk8sp9": [
+        "./src/utils/errors.ts"
+      ],
+      "#9d18vpqjndij": [
+        "./src/backend/utils/normalize.ts"
+      ],
+      "#borism6zb02o": [
+        "./src/utils/files.ts"
+      ],
+      "#bylb7mxgjugd": [
+        "./src/backend/utils/time.ts"
+      ],
+      "#c5bjtgzvarhf": [
+        "./src/logging.ts"
+      ],
+      "#cpvuscfrjz8r": [
+        "./src/frontend/js/utils/text.ts"
+      ],
+      "#f931g6zwzlos": [
+        "./src/params/extract.ts"
+      ],
+      "#go3m4pwdqt48": [
+        "./src/constants.ts"
+      ],
+      "#gxv0fwleavl3": [
+        "./src/suffixes.ts"
+      ],
+      "#my58qsd8qazx": [
+        "./src/module/handler.ts"
+      ],
+      "#ojhxpm0lszqj": [
+        "./src/scan/walk.ts"
+      ],
+      "#p4w1s2z41nxy": [
+        "./src/module/import.ts"
+      ],
+      "#s6ay5bw6g2k0": [
+        "./src/core/bootstrap.ts"
+      ],
+      "#t0phxm6bq4o4": [
+        "./src/backend/utils/object.ts"
+      ],
+      "#ul1bq2mdcsmm": [
+        "./src/core/runtime.ts"
+      ],
+      "#vl1kc579x5ul": [
+        "./src/utils/env.ts"
+      ],
+      "#xtwgvyadcr0h": [
+        "./src/core/discovery.ts"
+      ]
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "ES2020",
     "types": [
       "node",
       "bun"
-    ],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true
+    ]
   },
-  "include": [
-    "examples/**/*.ts",
-    "src/**/*.ts",
-    "test/**/*.ts"
-  ],
   "exclude": [
     "node_modules"
+  ],
+  "include": [
+    "examples/**/*.ts",
+    "internal/**/*.ts",
+    "src/**/*.ts",
+    "test/**/*.ts"
   ]
 }

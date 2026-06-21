@@ -1,7 +1,7 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { IMPORT_REVISION_PARAM } from "../constants.js";
+import { IMPORT_REVISION_PARAM } from "#go3m4pwdqt48";
 
 let moduleImportRevision = 0;
 
