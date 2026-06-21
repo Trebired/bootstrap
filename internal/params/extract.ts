@@ -149,26 +149,25 @@ function extractParamsOverrideFromFile(args: {
 }): string[] | null {
   const { code, exportShape, runtimeFn } = args;
   if (!code) return null;
+  return exportShape === "function"
+    ? extractFunctionParamsOverride(code, runtimeFn)
+    : extractAttachParamsOverride(code, runtimeFn);
+}
 
-  if (exportShape === "function") {
-    const direct = extractParamsFromExportedFunctionCode(code);
-    if (direct && direct.length) return direct;
+function extractFunctionParamsOverride(code: string, runtimeFn: unknown): string[] | null {
+  const direct = extractParamsFromExportedFunctionCode(code);
+  if (direct && direct.length) return direct;
 
-    const refName = extractExportedFnName(code);
-    if (refName) {
-      const params = extractParamsFromNamedFunction(code, refName);
-      if (params && params.length) return params;
-    }
-
-    const runtimeName = typeof runtimeFn === "function" && runtimeFn.name ? String(runtimeFn.name).trim() : "";
-    if (runtimeName) {
-      const params = extractParamsFromNamedFunction(code, runtimeName);
-      if (params && params.length) return params;
-    }
-
-    return null;
+  for (const name of [extractExportedFnName(code), resolveRuntimeFnName(runtimeFn)]) {
+    if (!name) continue;
+    const params = extractParamsFromNamedFunction(code, name);
+    if (params && params.length) return params;
   }
 
+  return null;
+}
+
+function extractAttachParamsOverride(code: string, runtimeFn: unknown): string[] | null {
   const direct = extractParamsFromAttachExportCode(code);
   if (direct && direct.length) return direct;
 
@@ -177,24 +176,17 @@ function extractParamsOverrideFromFile(args: {
     if (params && params.length) return params;
   }
 
-  const attachValueName = extractAttachValueNameFromObjectExport(code);
-  if (attachValueName && attachValueName !== "attach") {
-    const params = extractParamsFromNamedFunction(code, attachValueName);
+  for (const name of [extractAttachValueNameFromObjectExport(code), resolveRuntimeFnName(runtimeFn)]) {
+    if (!name || name === "attach") continue;
+    const params = extractParamsFromNamedFunction(code, name);
     if (params && params.length) return params;
   }
 
-  if (attachValueName === "attach") {
-    const params = extractParamsFromNamedFunction(code, "attach");
-    if (params && params.length) return params;
-  }
+  return extractParamsFromNamedFunction(code, "attach");
+}
 
-  const runtimeName = typeof runtimeFn === "function" && runtimeFn.name ? String(runtimeFn.name).trim() : "";
-  if (runtimeName && runtimeName !== "attach") {
-    const params = extractParamsFromNamedFunction(code, runtimeName);
-    if (params && params.length) return params;
-  }
-
-  return null;
+function resolveRuntimeFnName(runtimeFn: unknown): string {
+  return typeof runtimeFn === "function" && runtimeFn.name ? String(runtimeFn.name).trim() : "";
 }
 
 export {

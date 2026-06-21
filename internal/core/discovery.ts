@@ -163,6 +163,31 @@ function discoverBootstrapFiles(args: {
   });
   const excludedSeen = new Set<string>();
   const roots = resolveRoots({ dir, scan, suffixRules, verbose, logger });
+  const collected = collectBootstrapFiles(dir, roots, scan, suffixRules, excludedSeen, verbose, logger);
+  collected.ordered.sort((a, b) => compareFiles(a.name, b.name, suffixRules) || a.abs.localeCompare(b.abs));
+
+  return {
+    dir,
+    ordered: collected.ordered,
+    suffixRules,
+    summary: {
+      scanned: collected.scanned,
+    },
+  };
+}
+
+function collectBootstrapFiles(
+  dir: string,
+  roots: string[],
+  scan: NormalizedScanConfig,
+  suffixRules: Required<SuffixRules>,
+  excludedSeen: Set<string>,
+  verbose: boolean,
+  logger: NormalizedBootstrapLogger,
+): {
+  ordered: DiscoveredBootstrapFile[];
+  scanned: number;
+} {
   const ordered: DiscoveredBootstrapFile[] = [];
   let scanned = 0;
 
@@ -180,32 +205,36 @@ function discoverBootstrapFiles(args: {
       logger,
     });
     scanned += all.length;
-
-    for (const fileAbs of all) {
-      const name = path.basename(fileAbs);
-      const relativePath = normalizeMatchValue(relFromRoot(fileAbs, dir));
-
-      if (scan.filesInclude.size && !matchesRule({ name, relativePath, rules: scan.filesInclude })) continue;
-      if (!isAttachFile(name, suffixRules)) continue;
-
-      ordered.push({
-        abs: fileAbs,
-        name,
-        relativePath: relFromRoot(fileAbs, dir),
-      });
-    }
+    ordered.push(...selectAttachFiles(dir, all, scan.filesInclude, suffixRules));
   }
 
-  ordered.sort((a, b) => compareFiles(a.name, b.name, suffixRules) || a.abs.localeCompare(b.abs));
-
   return {
-    dir,
     ordered,
-    suffixRules,
-    summary: {
-      scanned,
-    },
+    scanned,
   };
+}
+
+function selectAttachFiles(
+  dir: string,
+  filePaths: string[],
+  filesInclude: Set<string>,
+  suffixRules: Required<SuffixRules>,
+): DiscoveredBootstrapFile[] {
+  const ordered: DiscoveredBootstrapFile[] = [];
+
+  for (const fileAbs of filePaths) {
+    const name = path.basename(fileAbs);
+    const relativePath = normalizeMatchValue(relFromRoot(fileAbs, dir));
+    if (filesInclude.size && !matchesRule({ name, relativePath, rules: filesInclude })) continue;
+    if (!isAttachFile(name, suffixRules)) continue;
+    ordered.push({
+      abs: fileAbs,
+      name,
+      relativePath: relFromRoot(fileAbs, dir),
+    });
+  }
+
+  return ordered;
 }
 
 export {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { createBootstrap } from "../../src/index";
+import { createBootstrap } from "#7l8fl6xuos5s";
 import { tempDir, writeModule } from "./helpers";
 import path from "node:path";
 

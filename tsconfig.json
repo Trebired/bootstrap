@@ -11,6 +11,9 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "paths": {
+      "#0co91ca40kwl": [
+        "./src/params/resolve.ts"
+      ],
       "#0jlu4wac9xrt": [
         "./internal/core/bootstrap.ts"
       ],
@@ -25,9 +28,6 @@
       ],
       "#5m1qr8zj0sdu": [
         "./internal/scan/walk.ts"
-      ],
-      "#0co91ca40kwl": [
-        "./src/params/resolve.ts"
       ],
       "#63np0sf1s6f9": [
         "./src/types.ts"
@@ -44,6 +44,9 @@
       "#7vfj5fhk8sp9": [
         "./src/utils/errors.ts"
       ],
+      "#93ahtzcbfzto": [
+        "./internal/core/runtime/context.ts"
+      ],
       "#9d18vpqjndij": [
         "./src/backend/utils/normalize.ts"
       ],
@@ -59,8 +62,17 @@
       "#cpvuscfrjz8r": [
         "./src/frontend/js/utils/text.ts"
       ],
+      "#dwevoxi8e7xr": [
+        "./internal/core/runtime/scan.ts"
+      ],
+      "#ew62df5jlvoi": [
+        "./tb.code-discipline.ts"
+      ],
       "#f931g6zwzlos": [
         "./src/params/extract.ts"
+      ],
+      "#g5t5x6y9pcnq": [
+        "./internal/core/runtime/lifecycle.ts"
       ],
       "#go3m4pwdqt48": [
         "./src/constants.ts"
@@ -77,6 +89,9 @@
       "#p4w1s2z41nxy": [
         "./src/module/import.ts"
       ],
+      "#pq31f51x00dj": [
+        "./internal/core/runtime/steps.ts"
+      ],
       "#s6ay5bw6g2k0": [
         "./src/core/bootstrap.ts"
       ],
@@ -91,6 +106,9 @@
       ],
       "#xtwgvyadcr0h": [
         "./src/core/discovery.ts"
+      ],
+      "#yhcb6a9wy9ql": [
+        "./internal/core/runtime/shared.ts"
       ]
     },
     "resolveJsonModule": true,

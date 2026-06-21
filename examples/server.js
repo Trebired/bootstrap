@@ -2,7 +2,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { bootstrap } from "../src/index.js";
+import { bootstrap } from "#7l8fl6xuos5s";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dir = path.join(here, "server_bootstrap");

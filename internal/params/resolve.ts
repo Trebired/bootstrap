@@ -36,37 +36,62 @@ function resolveArgsForFunction(
     };
   }
 
-  const args: unknown[] = [];
-  const meta: ParamBinding[] = [];
-  const missing: string[] = [];
-
-  for (const token of tokens) {
-    const param = String(token || "").trim();
-
-    if (!isIdentifierToken(param)) {
-      missing.push(`<unsupported-param:${param}>`);
-      continue;
-    }
-
-    const low = param.toLowerCase();
-    if (low === "dependencies" || low === "deps") {
-      args.push(dependencies);
-      meta.push({ param, from: "dependencies", to: "dependencies" });
-      continue;
-    }
-
-    const realKey = dependencyIndex.get(low);
-    if (!realKey) {
-      missing.push(param);
-      continue;
-    }
-
-    args.push(dependencies[realKey]);
-    meta.push({ param, from: "name", to: realKey });
-  }
+  const resolved = tokens.map((token) => resolveParamBinding(token, dependencies, dependencyIndex));
+  const args = resolved.filter(isResolvedBindingOk).map((item) => item.value);
+  const meta = resolved.filter(isResolvedBindingOk).map((item) => item.meta);
+  const missing = resolved.filter(isResolvedBindingMissing).map((item) => item.missing);
 
   if (missing.length) return { ok: false, missing, meta, used: tokens };
   return { ok: true, args, meta, used: tokens };
+}
+
+function resolveParamBinding(
+  token: string,
+  dependencies: Record<string, unknown>,
+  dependencyIndex: Map<string, string>,
+):
+  | { ok: true; meta: ParamBinding; value: unknown }
+  | { missing: string; ok: false } {
+  const param = String(token || "").trim();
+  if (!isIdentifierToken(param)) {
+    return { ok: false, missing: `<unsupported-param:${param}>` };
+  }
+
+  const low = param.toLowerCase();
+  if (low === "dependencies" || low === "deps") {
+    return {
+      ok: true,
+      value: dependencies,
+      meta: { param, from: "dependencies", to: "dependencies" },
+    };
+  }
+
+  const realKey = dependencyIndex.get(low);
+  if (!realKey) {
+    return { ok: false, missing: param };
+  }
+
+  return {
+    ok: true,
+    value: dependencies[realKey],
+    meta: { param, from: "name", to: realKey },
+  };
+}
+
+function isResolvedBindingOk(
+  item: ReturnType<typeof resolveParamBinding>,
+): item is Extract<ReturnType<typeof resolveParamBinding>, {
+  ok: true;
+}> {
+  return item.ok;
+}
+
+function isResolvedBindingMissing(
+  item: ReturnType<typeof resolveParamBinding>,
+): item is Extract<ReturnType<typeof resolveParamBinding>, {
+  ok: false;
+}> {
+  return !item.ok;
 }
 
 function formatMeta(meta: ParamBinding[]): string {

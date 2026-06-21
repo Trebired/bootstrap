@@ -36,74 +36,136 @@ function walkBootstrapFiles(args: {
   verbose: boolean;
   logger: NormalizedBootstrapLogger;
 }): string[] {
-  const { allowNodeModules, rootAbs, dirsExclude, dirAbs, excludedSeen, filesExclude, filesInclude, suffixRules, verbose, logger } = args;
+  const { rootAbs, dirAbs, excludedSeen, verbose, logger } = args;
   const out: string[] = [];
-  const normalizedSuffixRules = normalizeSuffixRules(suffixRules);
+  const normalizedSuffixRules = normalizeSuffixRules(args.suffixRules);
+  const logExcluded = createExcludedLogger(dirAbs, excludedSeen, verbose, logger);
+  const visitDir = (currentDir: string) => visitBootstrapDir({
+    allowNodeModules: args.allowNodeModules,
+    currentDir,
+    dirAbs,
+    dirsExclude: args.dirsExclude,
+    filesExclude: args.filesExclude,
+    filesInclude: args.filesInclude,
+    logExcluded,
+    logger,
+    normalizedSuffixRules,
+    out,
+  }, visitDir);
 
-  function logExcluded(kind: string, absPath: string, reason: string) {
+  visitDir(rootAbs);
+  return out;
+}
+
+function createExcludedLogger(
+  dirAbs: string,
+  excludedSeen: Set<string>,
+  verbose: boolean,
+  logger: NormalizedBootstrapLogger,
+) {
+  return (kind: string, absPath: string, reason: string) => {
     const rel = relFromRoot(absPath, dirAbs);
     const key = `${kind}::${rel}`;
     if (excludedSeen.has(key)) return;
     excludedSeen.add(key);
     if (verbose) logger.warn(BOOTSTRAP_LOG_GROUP, `skip (${kind}:${reason}) :: ${rel}`);
+  };
+}
+
+function visitBootstrapDir(
+  args: {
+    allowNodeModules: boolean;
+    currentDir: string;
+    dirAbs: string;
+    dirsExclude: Set<string>;
+    filesExclude: Set<string>;
+    filesInclude: Set<string>;
+    logExcluded: (kind: string, absPath: string, reason: string) => void;
+    logger: NormalizedBootstrapLogger;
+    normalizedSuffixRules: ReturnType<typeof normalizeSuffixRules>;
+    out: string[];
+  },
+  visitDir: (currentDir: string) => void,
+): void {
+  let entries: fs.Dirent[] = [];
+  try {
+    entries = fs.readdirSync(args.currentDir, { withFileTypes: true });
+  } catch (error) {
+    args.logger.error(BOOTSTRAP_LOG_GROUP, `scan-failed :: ${relFromRoot(args.currentDir, args.dirAbs)}: ${formatError(error)}`);
+    return;
   }
 
-  function visitDir(currentDir: string) {
-    let entries: fs.Dirent[] = [];
-    try {
-      entries = fs.readdirSync(currentDir, { withFileTypes: true });
-    } catch (error) {
-      logger.error(BOOTSTRAP_LOG_GROUP, `scan-failed :: ${relFromRoot(currentDir, dirAbs)}: ${formatError(error)}`);
-      return;
-    }
+  for (const entry of entries) {
+    visitEntry({
+      ...args,
+      entry,
+      visitDir,
+    });
+  }
+}
 
-    for (const entry of entries) {
-      const name = entry && entry.name ? String(entry.name) : "";
-      if (!name) continue;
+function visitEntry(args: {
+  allowNodeModules: boolean;
+  currentDir: string;
+  dirAbs: string;
+  dirsExclude: Set<string>;
+  entry: fs.Dirent;
+  filesExclude: Set<string>;
+  filesInclude: Set<string>;
+  logExcluded: (kind: string, absPath: string, reason: string) => void;
+  normalizedSuffixRules: ReturnType<typeof normalizeSuffixRules>;
+  out: string[];
+  visitDir: (currentDir: string) => void;
+}): void {
+  const name = args.entry && args.entry.name ? String(args.entry.name) : "";
+  if (!name) return;
 
-      const abs = path.join(currentDir, name);
-      const relativePath = normalizeMatchValue(relFromRoot(abs, dirAbs));
+  const abs = path.join(args.currentDir, name);
+  const relativePath = normalizeMatchValue(relFromRoot(abs, args.dirAbs));
 
-      if (entry.isDirectory()) {
-        if (!allowNodeModules && name === "node_modules") {
-          logExcluded("excluded-dir", abs, name);
-          continue;
-        }
-
-        if (isExcludedBySuffix(name, normalizedSuffixRules)) {
-          logExcluded("excluded-dir", abs, name);
-          continue;
-        }
-
-        if (matchesRule({ name, relativePath, rules: dirsExclude })) {
-          logExcluded("excluded-dir", abs, name);
-          continue;
-        }
-
-        visitDir(abs);
-        continue;
-      }
-
-      if (!entry.isFile()) continue;
-
-      if (isExcludedBySuffix(name, normalizedSuffixRules)) {
-        logExcluded("excluded-file", abs, name);
-        continue;
-      }
-
-      if (matchesRule({ name, relativePath, rules: filesExclude })) {
-        logExcluded("excluded-file", abs, name);
-        continue;
-      }
-
-      if (!/\.(js|mjs|ts|mts)$/i.test(name)) continue;
-      if (filesInclude.size && !matchesRule({ name, relativePath, rules: filesInclude })) continue;
-      out.push(abs);
-    }
+  if (args.entry.isDirectory()) {
+    if (shouldSkipDir(args, name, abs, relativePath)) return;
+    args.visitDir(abs);
+    return;
   }
 
-  visitDir(rootAbs);
-  return out;
+  if (!args.entry.isFile() || shouldSkipFile(args, name, abs, relativePath)) return;
+  args.out.push(abs);
+}
+
+function shouldSkipDir(
+  args: Parameters<typeof visitEntry>[0],
+  name: string,
+  abs: string,
+  relativePath: string,
+): boolean {
+  if (!args.allowNodeModules && name === "node_modules") {
+    args.logExcluded("excluded-dir", abs, name);
+    return true;
+  }
+
+  if (isExcludedBySuffix(name, args.normalizedSuffixRules) || matchesRule({ name, relativePath, rules: args.dirsExclude })) {
+    args.logExcluded("excluded-dir", abs, name);
+    return true;
+  }
+
+  return false;
+}
+
+function shouldSkipFile(
+  args: Parameters<typeof visitEntry>[0],
+  name: string,
+  abs: string,
+  relativePath: string,
+): boolean {
+  if (isExcludedBySuffix(name, args.normalizedSuffixRules) || matchesRule({ name, relativePath, rules: args.filesExclude })) {
+    args.logExcluded("excluded-file", abs, name);
+    return true;
+  }
+
+  if (!/\.(js|mjs|ts|mts)$/i.test(name)) return true;
+  if (args.filesInclude.size && !matchesRule({ name, relativePath, rules: args.filesInclude })) return true;
+  return false;
 }
 
 export { walkBootstrapFiles };

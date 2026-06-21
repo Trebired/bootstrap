@@ -1,4 +1,4 @@
-import { createBootstrap } from "../src/index";
+import { createBootstrap } from "#7l8fl6xuos5s";
 
 type FakeServer = {
   listen: () => Promise<void>;

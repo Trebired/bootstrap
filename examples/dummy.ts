@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { bootstrap } from "../src/index";
+import { bootstrap } from "#7l8fl6xuos5s";
 
 type DemoLogger = {
   info(group: string, message: string, data?: unknown): void;

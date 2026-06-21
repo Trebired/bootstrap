@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import path from "node:path";
 
-import { bootstrap, compareFiles, isAttachFile } from "../../src/index";
-import { resolveModuleHandler } from "../../src/module/handler";
+import { bootstrap, compareFiles, isAttachFile } from "#7l8fl6xuos5s";
+import { resolveModuleHandler } from "#my58qsd8qazx";
 import { captureEventSink, captureLogger, tempDir, writeModule } from "./helpers";
 
 describe("@trebired/bootstrap", () => {

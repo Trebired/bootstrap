@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import path from "node:path";
 
-import { bootstrap } from "../../src/index";
+import { bootstrap } from "#7l8fl6xuos5s";
 import { captureLogger, tempDir, writeModule } from "./helpers";
 
 describe("@trebired/bootstrap", () => {
