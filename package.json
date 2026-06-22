@@ -96,13 +96,16 @@
     "url": "https://github.com/Trebired/bootstrap"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && node ./scripts/prepare-dist.mjs prepare-dist",
     "demo": "bun run examples/dummy.ts",
-    "prepublishOnly": "bun run typecheck && bun test && bun run build",
+    "postpack": "node ./scripts/prepare-dist.mjs postpack",
+    "prepack": "bun run build && node ./scripts/prepare-dist.mjs prepack",
+    "prepublishOnly": "bun run typecheck && bun test && bun run verify:pack",
     "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:pack": "node ./scripts/verify-pack.mjs"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "1.1.1"
+  "version": "1.1.2"
 }

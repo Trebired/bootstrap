@@ -4,6 +4,12 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.2
+
+- fixed the packed package metadata so `main`, `types`, and package-private alias imports resolve to built files that actually exist in the published tarball
+- added a publish-preparation step that promotes public `dist/src` entrypoints into `dist`, rewrites compiled alias imports to built relative paths, and rewrites packed `package.json` imports during `npm pack` and `npm publish`
+- added explicit pack verification that inspects the tarball and smoke-tests install, typecheck, and runtime import from a clean temporary consumer project
+
 ## 1.1.1
 
 - Enforced the package `tb.code-discipline.ts` policy across `src`, `internal`, and other package-owned source folders, including synced import aliases and normalized `tsconfig` path metadata.
