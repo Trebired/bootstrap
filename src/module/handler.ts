@@ -20,6 +20,8 @@ type BootstrapModuleInvocationResult = ResultLike<
   }
 >;
 
+type CallableBootstrapHandler = (...values: unknown[]) => unknown;
+
 function hasOwnFn(obj: unknown, key: PropertyKey): boolean {
   try {
     const descriptor = Object.getOwnPropertyDescriptor(obj as object, key);
@@ -69,82 +71,129 @@ async function invokeModuleHandler(args: {
   logger: NormalizedBootstrapLogger;
 }): Promise<BootstrapModuleInvocationResult> {
   const { handler, dependencies, tag, paramsOverride, paramsSource, verbose, logger } = args;
-  const fn = handler.exportShape === "attach" ? (handler.mod as any).attach : handler.mod;
+  const fn = resolveCallableHandler(handler);
 
   if (typeof fn !== "function") {
-    if (verbose) logger.warn(BOOTSTRAP_LOG_GROUP, `skip (module-not-function) :: ${tag}`);
-    return result.noop("module-not-function", "Bootstrap module export is not callable.", {
-      data: {
-        exportShape: handler.exportShape,
-        invoked: false,
-        tag,
-      },
-      details: {
-        exportShape: handler.exportShape,
-        paramsSource,
-        tag,
-      },
-    });
+    return skipNonCallableModule({ handler, logger, paramsSource, tag, verbose });
   }
 
   const resolved = resolveArgsForFunction(dependencies, fn, paramsOverride);
   if (resolved.ok !== true) {
-    if (verbose) {
-      logger.warn(
-        BOOTSTRAP_LOG_GROUP,
-        `skip (${handler.exportShape}-missing-args:${resolved.missing.join(",")}) :: ${tag} | dependencyKeys=${Object.keys(dependencies || {}).join(",")} | paramsSource=${paramsSource} | params=${Array.isArray(resolved.used) ? resolved.used.join(",") : "-"}`,
-      );
-    }
-
-    return result.noop("module-missing-args", "Bootstrap module skipped because dependencies are missing.", {
-      data: {
-        exportShape: handler.exportShape,
-        invoked: false,
-        tag,
-      },
-      details: {
-        exportShape: handler.exportShape,
-        missing: resolved.missing,
-        paramsSource,
-        tag,
-      },
+    return skipMissingArgsModule({
+      dependencies,
+      handler,
+      logger,
+      paramsSource,
+      resolved,
+      tag,
+      verbose,
     });
   }
 
   try {
-    await Promise.resolve((fn as (...values: unknown[]) => unknown)(...resolved.args));
-    if (verbose) {
-      const mode = handler.exportShape === "attach" ? "attach" : "fn";
-      logger.info(BOOTSTRAP_LOG_GROUP, `${mode}(${formatMeta(resolved.meta)}) :: ${tag}`);
-    }
-    return result.ok("Bootstrap module invoked.", {
-      data: {
-        exportShape: handler.exportShape,
-        invoked: true,
-        tag,
-      },
-      details: {
-        exportShape: handler.exportShape,
-        paramsSource,
-        tag,
-      },
-    });
+    await runModuleHandler(fn, resolved.args);
+    logSuccessfulInvocation({ handler, logger, resolvedMeta: resolved.meta, tag, verbose });
+    return createInvocationResult("ok", handler, paramsSource, tag);
   } catch (error) {
     logger.error(BOOTSTRAP_LOG_GROUP, `exec-failed :: ${tag}: ${formatError(error)}`);
-    return result.internal("module-exec-failed", "Bootstrap module execution failed.", {
-      data: {
-        exportShape: handler.exportShape,
-        invoked: false,
-        tag,
-      },
-      details: {
-        error: formatError(error),
-        exportShape: handler.exportShape,
-        paramsSource,
-        tag,
-      },
+    return createInvocationResult("error", handler, paramsSource, tag, {
+      error: formatError(error),
     });
   }
+}
+
+function createInvocationResult(
+  kind: "error" | "noop" | "ok",
+  handler: BootstrapHandler,
+  paramsSource: string,
+  tag: string,
+  extraDetails: {
+    error?: string;
+    missing?: string[];
+  } = {},
+): BootstrapModuleInvocationResult {
+  const details = {
+    ...extraDetails,
+    exportShape: handler.exportShape,
+    paramsSource,
+    tag,
+  };
+  const data = {
+    exportShape: handler.exportShape,
+    invoked: kind === "ok",
+    tag,
+  };
+
+  if (kind === "ok") {
+    return result.ok("Bootstrap module invoked.", { data, details });
+  }
+
+  if (kind === "noop") {
+    return result.noop("module-skipped", "Bootstrap module was skipped.", { data, details });
+  }
+
+  return result.internal("module-exec-failed", "Bootstrap module execution failed.", { data, details });
+}
+
+async function runModuleHandler(fn: CallableBootstrapHandler, args: unknown[]): Promise<void> {
+  await Promise.resolve(fn(...args));
+}
+
+function resolveCallableHandler(handler: BootstrapHandler): CallableBootstrapHandler | null {
+  return handler.exportShape === "attach" ? (handler.mod as any).attach : handler.mod as CallableBootstrapHandler;
+}
+
+function logSuccessfulInvocation(args: {
+  handler: BootstrapHandler;
+  logger: NormalizedBootstrapLogger;
+  resolvedMeta: Parameters<typeof formatMeta>[0];
+  tag: string;
+  verbose: boolean;
+}): void {
+  if (!args.verbose) {
+    return;
+  }
+
+  const mode = args.handler.exportShape === "attach" ? "attach" : "fn";
+  args.logger.info(BOOTSTRAP_LOG_GROUP, `${mode}(${formatMeta(args.resolvedMeta)}) :: ${args.tag}`);
+}
+
+function skipNonCallableModule(args: {
+  handler: BootstrapHandler;
+  logger: NormalizedBootstrapLogger;
+  paramsSource: string;
+  tag: string;
+  verbose: boolean;
+}): BootstrapModuleInvocationResult {
+  if (args.verbose) {
+    args.logger.warn(BOOTSTRAP_LOG_GROUP, `skip (module-not-function) :: ${args.tag}`);
+  }
+
+  return createInvocationResult("noop", args.handler, args.paramsSource, args.tag);
+}
+
+function skipMissingArgsModule(args: {
+  dependencies: Record<string, unknown>;
+  handler: BootstrapHandler;
+  logger: NormalizedBootstrapLogger;
+  paramsSource: string;
+  resolved: {
+    missing: string[];
+    used: string[];
+  };
+  tag: string;
+  verbose: boolean;
+}): BootstrapModuleInvocationResult {
+  if (args.verbose) {
+    args.logger.warn(
+      BOOTSTRAP_LOG_GROUP,
+      `skip (${args.handler.exportShape}-missing-args:${args.resolved.missing.join(",")}) :: ${args.tag} | dependencyKeys=${Object.keys(args.dependencies || {}).join(",")} | paramsSource=${args.paramsSource} | params=${args.resolved.used.join(",") || "-"}`,
+    );
+  }
+
+  return createInvocationResult("noop", args.handler, args.paramsSource, args.tag, {
+    missing: args.resolved.missing,
+  });
 }
 
 export { hasOwnFn, invokeModuleHandler, resolveModuleHandler };

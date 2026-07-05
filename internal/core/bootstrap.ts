@@ -101,11 +101,7 @@ async function bootstrapDiscoveredFile(args: {
   const code = readFileCached(args.fileCodeCache, args.file.abs);
   const handler = resolveModuleHandler(imported);
   if (!handler) {
-    if (args.verbose) {
-      args.logger.info(BOOTSTRAP_LOG_GROUP, `skip (no-handler) :: ${args.file.relativePath}`);
-    }
-
-    args.summary.skipped += 1;
+    markSkippedWithoutHandler(args);
     return;
   }
 
@@ -124,17 +120,36 @@ async function bootstrapDiscoveredFile(args: {
     logger: args.logger,
   });
 
+  applyInvocationSummary(args.summary, invocation);
+}
+
+function applyInvocationSummary(summary: BootstrapSummary, invocation: { ok: boolean; noop: boolean }): void {
   if (invocation.ok && !invocation.noop) {
-    args.summary.loaded += 1;
+    summary.loaded += 1;
     return;
   }
 
   if (invocation.noop) {
-    args.summary.skipped += 1;
+    summary.skipped += 1;
     return;
   }
 
-  args.summary.failed += 1;
+  summary.failed += 1;
+}
+
+function markSkippedWithoutHandler(args: {
+  file: {
+    relativePath: string;
+  };
+  logger: ReturnType<typeof resolveLogger>;
+  summary: BootstrapSummary;
+  verbose: boolean;
+}): void {
+  if (args.verbose) {
+    args.logger.info(BOOTSTRAP_LOG_GROUP, `skip (no-handler) :: ${args.file.relativePath}`);
+  }
+
+  args.summary.skipped += 1;
 }
 
 async function importBootstrapFile(args: {
