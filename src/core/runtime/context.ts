@@ -1,5 +1,5 @@
 import type { BootstrapContext, BootstrapDisposable, BootstrapOwnedResourceHandle, BootstrapOwnedResourceOptions } from "#63np0sf1s6f9";
-import type { BootstrapRuntimeImpl } from "#6pk4xe2v9lab";
+import type { BootstrapRuntimeImpl } from "#ul1bq2mdcsmm";
 import type { InternalOwnedResource, InternalSubsystem } from "./shared.js";
 import { createCleanupFromDisposable } from "./shared.js";
 

@@ -14,29 +14,11 @@
       "#0co91ca40kwl": [
         "./src/params/resolve.ts"
       ],
-      "#0jlu4wac9xrt": [
-        "./internal/core/bootstrap.ts"
-      ],
-      "#2g6zs1tw5mep": [
-        "./internal/core/discovery.ts"
-      ],
-      "#3z0wn9c7qkaf": [
-        "./internal/params/extract.ts"
-      ],
-      "#4v8yb2n6hcmd": [
-        "./internal/params/resolve.ts"
-      ],
-      "#5m1qr8zj0sdu": [
-        "./internal/scan/walk.ts"
-      ],
       "#63np0sf1s6f9": [
         "./src/types.ts"
       ],
       "#6dl7qf2opux1": [
         "./examples/lifecycle.ts"
-      ],
-      "#6pk4xe2v9lab": [
-        "./internal/core/runtime.ts"
       ],
       "#70ymmwextqjp": [
         "./test/specs/bootstrap/lifecycle.spec.ts"
@@ -53,17 +35,20 @@
       "#7x6frcgppchf": [
         "./examples/dummy.ts"
       ],
+      "#84byqmqnrpqp": [
+        "./src/core/runtime/lifecycle.ts"
+      ],
       "#8ogb8252gvss": [
         "./examples/server_bootstrap/http/server.a.js"
-      ],
-      "#93ahtzcbfzto": [
-        "./internal/core/runtime/context.ts"
       ],
       "#9d18vpqjndij": [
         "./src/backend/utils/normalize.ts"
       ],
       "#a0wozz8axihs": [
         "./test/specs/bootstrap/core.spec.ts"
+      ],
+      "#a1s350phpvx6": [
+        "./src/core/runtime/shared.ts"
       ],
       "#borism6zb02o": [
         "./src/utils/files.ts"
@@ -86,23 +71,23 @@
       "#dosx75o5vka5": [
         "./examples/server_bootstrap/http/routes.2.js"
       ],
-      "#dwevoxi8e7xr": [
-        "./internal/core/runtime/scan.ts"
-      ],
       "#ew62df5jlvoi": [
         "./tb.code-discipline.ts"
       ],
       "#f931g6zwzlos": [
         "./src/params/extract.ts"
       ],
-      "#g5t5x6y9pcnq": [
-        "./internal/core/runtime/lifecycle.ts"
-      ],
       "#go3m4pwdqt48": [
         "./src/constants.ts"
       ],
       "#gxv0fwleavl3": [
         "./src/suffixes.ts"
+      ],
+      "#kq9yax6ngsap": [
+        "./src/core/runtime/steps.ts"
+      ],
+      "#lf1epxji4pya": [
+        "./src/core/runtime/context.ts"
       ],
       "#my58qsd8qazx": [
         "./src/module/handler.ts"
@@ -112,9 +97,6 @@
       ],
       "#p4w1s2z41nxy": [
         "./src/module/import.ts"
-      ],
-      "#pq31f51x00dj": [
-        "./internal/core/runtime/steps.ts"
       ],
       "#qilcfd27tkyu": [
         "./examples/server_bootstrap/http/app.1.js"
@@ -134,8 +116,8 @@
       "#xtwgvyadcr0h": [
         "./src/core/discovery.ts"
       ],
-      "#yhcb6a9wy9ql": [
-        "./internal/core/runtime/shared.ts"
+      "#yf969jk7frvx": [
+        "./src/core/runtime/scan.ts"
       ],
       "#you8100fjr92": [
         "./test/specs/helpers.ts"
@@ -155,7 +137,6 @@
   ],
   "include": [
     "examples/**/*.ts",
-    "internal/**/*.ts",
     "src/**/*.ts",
     "test/**/*.ts"
   ]

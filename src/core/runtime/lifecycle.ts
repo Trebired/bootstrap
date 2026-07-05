@@ -6,7 +6,7 @@ import type {
   BootstrapShutdownReport,
   BootstrapShutdownStepResult,
 } from "#63np0sf1s6f9";
-import type { BootstrapRuntimeImpl } from "#6pk4xe2v9lab";
+import type { BootstrapRuntimeImpl } from "#ul1bq2mdcsmm";
 import { createRuntimeContext } from "./context.js";
 import { loadScannedSubsystems } from "./scan.js";
 import { nowIso, orderSubsystems } from "./shared.js";

@@ -1,5 +1,5 @@
 import type { BootstrapShutdownStepResult } from "#63np0sf1s6f9";
-import type { BootstrapRuntimeImpl } from "#6pk4xe2v9lab";
+import type { BootstrapRuntimeImpl } from "#ul1bq2mdcsmm";
 import type { InternalStepOptions } from "./shared.js";
 import { nowIso } from "./shared.js";
 
