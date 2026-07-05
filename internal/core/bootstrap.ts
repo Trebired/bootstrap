@@ -114,7 +114,7 @@ async function bootstrapDiscoveredFile(args: {
     exportShape: handler.exportShape,
     runtimeFn: handler.runtimeFn,
   });
-  const ok = await invokeModuleHandler({
+  const invocation = await invokeModuleHandler({
     handler,
     dependencies: args.dependencies,
     tag: args.file.relativePath,
@@ -124,8 +124,17 @@ async function bootstrapDiscoveredFile(args: {
     logger: args.logger,
   });
 
-  if (ok) args.summary.loaded += 1;
-  else args.summary.failed += 1;
+  if (invocation.ok && !invocation.noop) {
+    args.summary.loaded += 1;
+    return;
+  }
+
+  if (invocation.noop) {
+    args.summary.skipped += 1;
+    return;
+  }
+
+  args.summary.failed += 1;
 }
 
 async function importBootstrapFile(args: {

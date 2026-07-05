@@ -131,7 +131,7 @@ function createLegacyScannedSubsystem(
     dependsOn: [],
     source: "scanned-legacy" as const,
     bootstrapHook: async () => {
-      const ok = await invokeModuleHandler({
+      const invocation = await invokeModuleHandler({
         handler,
         dependencies: runtime.dependencies,
         tag: relativePath,
@@ -141,7 +141,7 @@ function createLegacyScannedSubsystem(
         logger: runtime.logger,
       });
 
-      if (!ok) {
+      if (!invocation.ok) {
         throw new Error(`bootstrap-legacy-module-failed:${relativePath}`);
       }
     },

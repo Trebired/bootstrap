@@ -1,7 +1,24 @@
+import { result, type ResultLike } from "@trebired/result";
+
 import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
 import { formatMeta, resolveArgsForFunction } from "#0co91ca40kwl";
 import type { BootstrapHandler, NormalizedBootstrapLogger } from "#63np0sf1s6f9";
 import { formatError } from "#7vfj5fhk8sp9";
+
+type BootstrapModuleInvocationResult = ResultLike<
+  {
+    exportShape: BootstrapHandler["exportShape"];
+    invoked: boolean;
+    tag: string;
+  },
+  {
+    error?: string;
+    exportShape: BootstrapHandler["exportShape"];
+    missing?: string[];
+    paramsSource: string;
+    tag: string;
+  }
+>;
 
 function hasOwnFn(obj: unknown, key: PropertyKey): boolean {
   try {
@@ -50,13 +67,24 @@ async function invokeModuleHandler(args: {
   paramsSource: string;
   verbose: boolean;
   logger: NormalizedBootstrapLogger;
-}): Promise<boolean> {
+}): Promise<BootstrapModuleInvocationResult> {
   const { handler, dependencies, tag, paramsOverride, paramsSource, verbose, logger } = args;
   const fn = handler.exportShape === "attach" ? (handler.mod as any).attach : handler.mod;
 
   if (typeof fn !== "function") {
     if (verbose) logger.warn(BOOTSTRAP_LOG_GROUP, `skip (module-not-function) :: ${tag}`);
-    return false;
+    return result.noop("module-not-function", "Bootstrap module export is not callable.", {
+      data: {
+        exportShape: handler.exportShape,
+        invoked: false,
+        tag,
+      },
+      details: {
+        exportShape: handler.exportShape,
+        paramsSource,
+        tag,
+      },
+    });
   }
 
   const resolved = resolveArgsForFunction(dependencies, fn, paramsOverride);
@@ -68,7 +96,19 @@ async function invokeModuleHandler(args: {
       );
     }
 
-    return false;
+    return result.noop("module-missing-args", "Bootstrap module skipped because dependencies are missing.", {
+      data: {
+        exportShape: handler.exportShape,
+        invoked: false,
+        tag,
+      },
+      details: {
+        exportShape: handler.exportShape,
+        missing: resolved.missing,
+        paramsSource,
+        tag,
+      },
+    });
   }
 
   try {
@@ -77,10 +117,33 @@ async function invokeModuleHandler(args: {
       const mode = handler.exportShape === "attach" ? "attach" : "fn";
       logger.info(BOOTSTRAP_LOG_GROUP, `${mode}(${formatMeta(resolved.meta)}) :: ${tag}`);
     }
-    return true;
+    return result.ok("Bootstrap module invoked.", {
+      data: {
+        exportShape: handler.exportShape,
+        invoked: true,
+        tag,
+      },
+      details: {
+        exportShape: handler.exportShape,
+        paramsSource,
+        tag,
+      },
+    });
   } catch (error) {
     logger.error(BOOTSTRAP_LOG_GROUP, `exec-failed :: ${tag}: ${formatError(error)}`);
-    return false;
+    return result.internal("module-exec-failed", "Bootstrap module execution failed.", {
+      data: {
+        exportShape: handler.exportShape,
+        invoked: false,
+        tag,
+      },
+      details: {
+        error: formatError(error),
+        exportShape: handler.exportShape,
+        paramsSource,
+        tag,
+      },
+    });
   }
 }
 
