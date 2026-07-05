@@ -4,6 +4,11 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.3
+
+- Added `@trebired/result` as the package-owned backend outcome surface for bootstrap execution paths so internal module coordination no longer rebuilds local result wrappers.
+- Enforced the current `@trebired/code-discipline` policy on the touched bootstrap result integration paths and supporting tests without changing the public runtime contract.
+
 ## 1.1.2
 
 - fixed the packed package metadata so `main`, `types`, and package-private alias imports resolve to built files that actually exist in the published tarball
