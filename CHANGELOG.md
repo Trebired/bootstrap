@@ -4,6 +4,10 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.4
+
+- Moved package-owned bootstrap logging under the `trebired.bootstrap` group root, including initialization, scan, load, and discovery diagnostics.
+
 ## 1.1.3
 
 - Added `@trebired/result` as the package-owned backend outcome surface for bootstrap execution paths so internal module coordination no longer rebuilds local result wrappers.

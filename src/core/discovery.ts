@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { DEFAULT_LAST_SUFFIX } from "#go3m4pwdqt48";
+import { BOOTSTRAP_LOG_GROUP, DEFAULT_LAST_SUFFIX } from "#go3m4pwdqt48";
 import { compareFiles, isAttachFile, isExcludedBySuffix, normalizeSuffixRules } from "#gxv0fwleavl3";
 import type { BootstrapOptions, BootstrapScanOptions, NormalizedBootstrapLogger, SuffixRules } from "#63np0sf1s6f9";
 import { formatError } from "#7vfj5fhk8sp9";
@@ -116,7 +116,7 @@ function resolveRoots(args: {
   try {
     entries = fs.readdirSync(dir);
   } catch (error) {
-    logger.fail("bootstrap", `dir-scan-failed :: ${dir}: ${formatError(error)}`);
+    logger.fail(BOOTSTRAP_LOG_GROUP, `dir-scan-failed :: ${dir}: ${formatError(error)}`);
     throw error;
   }
 
@@ -127,17 +127,17 @@ function resolveRoots(args: {
     const relativePath = normalizeMatchValue(relFromRoot(full, dir));
 
     if (!scan.allowNodeModules && entry === "node_modules") {
-      if (verbose) logger.warn("bootstrap", `skip (excluded-root:${entry}) :: ${relFromRoot(full, dir)}`);
+      if (verbose) logger.warn(BOOTSTRAP_LOG_GROUP, `skip (excluded-root:${entry}) :: ${relFromRoot(full, dir)}`);
       continue;
     }
 
     if (isExcludedBySuffix(entry, suffixRules)) {
-      if (verbose) logger.warn("bootstrap", `skip (excluded-root:${entry}) :: ${relFromRoot(full, dir)}`);
+      if (verbose) logger.warn(BOOTSTRAP_LOG_GROUP, `skip (excluded-root:${entry}) :: ${relFromRoot(full, dir)}`);
       continue;
     }
 
     if (matchesRule({ name: entry, relativePath, rules: scan.dirsExclude })) {
-      if (verbose) logger.warn("bootstrap", `skip (excluded-root:${entry}) :: ${relFromRoot(full, dir)}`);
+      if (verbose) logger.warn(BOOTSTRAP_LOG_GROUP, `skip (excluded-root:${entry}) :: ${relFromRoot(full, dir)}`);
       continue;
     }
 

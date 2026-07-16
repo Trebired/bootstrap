@@ -131,8 +131,8 @@ export default function keep(state) {
 
   expect(warnRows).toEqual([]);
   expect(errorRows).toEqual([]);
-  expect(infoRows.some((args) => String(args[0]).includes("[bootstrap] load :: active/keep.1.ts"))).toBe(true);
-  expect(infoRows.some((args) => String(args[0]).includes("[bootstrap] scan-summary scanned=1 loaded=1 skipped=0 failed=0"))).toBe(true);
+  expect(infoRows.some((args) => String(args[0]).includes("[trebired.bootstrap] load :: active/keep.1.ts"))).toBe(true);
+  expect(infoRows.some((args) => String(args[0]).includes("[trebired.bootstrap] scan-summary scanned=1 loaded=1 skipped=0 failed=0"))).toBe(true);
 });
 
 test("throws a clear bootstrap error when dir is missing", async () => {
@@ -141,13 +141,13 @@ test("throws a clear bootstrap error when dir is missing", async () => {
   await expect(bootstrap({ logger } as any)).rejects.toThrow("bootstrap-missing-dir");
   expect(rows[0]).toEqual({
     level: "info",
-    group: "bootstrap.initialize",
+    group: "trebired.bootstrap.initialize",
     message: "@trebired/bootstrap initialized",
     data: undefined,
   });
   expect(rows[1]).toEqual({
     level: "fail",
-    group: "bootstrap",
+    group: "trebired.bootstrap",
     message: "missing-dir",
     data: undefined,
   });
@@ -163,7 +163,7 @@ test("maps fail logs onto fatal logger methods when needed", async () => {
 
   await expect(bootstrap({ logger } as any)).rejects.toThrow("bootstrap-missing-dir");
   expect(rows[0]).toEqual({
-    message: "[bootstrap] missing-dir",
+    message: "[trebired.bootstrap] missing-dir",
     data: undefined,
   });
 });

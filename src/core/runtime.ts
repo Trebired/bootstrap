@@ -89,7 +89,7 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
     logPackageInitialized({
       adapter: options.loggerAdapter,
       fallback: "console",
-      group: "bootstrap.initialize",
+      group: BOOTSTRAP_LOG_GROUP,
       logger: options.logger,
       source: "@trebired/bootstrap",
     });

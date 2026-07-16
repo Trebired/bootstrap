@@ -95,7 +95,7 @@ test("loads modules deterministically and resolves dependencies by parameter nam
   expect(summary).toEqual({ scanned: 4, loaded: 3, skipped: 0, failed: 0 });
   expect(rows[rows.length - 1]).toEqual({
     level: "info",
-    group: "bootstrap",
+    group: "trebired.bootstrap",
     message: "scan-summary scanned=4 loaded=3 skipped=0 failed=0",
     data: undefined,
   });
@@ -121,7 +121,7 @@ export default function connect(state) {
 
   expect(summary).toEqual({ scanned: 1, loaded: 1, skipped: 0, failed: 0 });
   expect(state.events).toEqual(["1"]);
-  expect(rows.some((entry) => entry.level === "info" && entry.group === "bootstrap" && entry.message === "load :: database/connect.1.ts")).toBe(true);
+  expect(rows.some((entry) => entry.level === "info" && entry.group === "trebired.bootstrap" && entry.message === "load :: database/connect.1.ts")).toBe(true);
 });
 
 test("supports explicit logger adapters for exact output shapes", async () => {

@@ -1,4 +1,4 @@
-const BOOTSTRAP_LOG_GROUP = "bootstrap";
+const BOOTSTRAP_LOG_GROUP = "trebired.bootstrap";
 const DEFAULT_LAST_SUFFIX = "a";
 const IMPORT_REVISION_PARAM = "bootstrap_v";
 
