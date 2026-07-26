@@ -1,10 +1,10 @@
-import { logPackageInitialized } from "@trebired/logger-adapter";
+import { logPackageInitialized } from "@package/logger-adapter";
 
 import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
 import { resolveLogger } from "#c5bjtgzvarhf";
 import { loadModuleFile, nextImportRevision } from "#p4w1s2z41nxy";
 import { invokeModuleHandler, resolveModuleHandler } from "#my58qsd8qazx";
-import { extractParamsOverrideFromFile } from "#f931g6zwzlos";
+import { extractParamsOverrideFromFile } from "#3z0wn9c7qkaf";
 import type { BootstrapOptions, BootstrapSummary } from "#63np0sf1s6f9";
 import { envVerbose } from "#vl1kc579x5ul";
 import { formatError } from "#7vfj5fhk8sp9";
@@ -52,7 +52,7 @@ function createBootstrapLogger(options: BootstrapOptions) {
     fallback: "console",
     group: BOOTSTRAP_LOG_GROUP,
     logger: options.logger,
-    source: "@trebired/bootstrap",
+    source: "@package/bootstrap",
   });
   return resolveLogger(options.logger, options.loggerAdapter);
 }

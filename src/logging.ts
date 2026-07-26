@@ -1,6 +1,6 @@
 import {
   resolveLogger as resolveSharedLogger,
-} from "@trebired/logger-adapter";
+} from "@package/logger-adapter";
 
 import type {
   BootstrapLogger,
@@ -16,7 +16,7 @@ function resolveLogger(
     adapter,
     fallback: "console",
     logger,
-    source: "@trebired/bootstrap",
+    source: "@package/bootstrap",
   }) as NormalizedBootstrapLogger;
 }
 

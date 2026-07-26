@@ -1,4 +1,4 @@
-import { result, type ResultLike } from "@trebired/result";
+import { result, type ResultLike } from "@package/result";
 
 import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
 import { formatMeta, resolveArgsForFunction } from "#0co91ca40kwl";
@@ -129,10 +129,10 @@ function createInvocationResult(
   }
 
   if (kind === "noop") {
-    return result.noop("module-skipped", "Bootstrap module was skipped.", { data, details });
+    return result.noop("module-skipped", { data, details });
   }
 
-  return result.internal("module-exec-failed", "Bootstrap module execution failed.", { data, details });
+  return result.internal("module-exec-failed", { data, details });
 }
 
 async function runModuleHandler(fn: CallableBootstrapHandler, args: unknown[]): Promise<void> {

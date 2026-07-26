@@ -7,7 +7,7 @@ import type { BootstrapOptions, BootstrapScanOptions, NormalizedBootstrapLogger,
 import { formatError } from "#7vfj5fhk8sp9";
 import { isDir, relFromRoot } from "#borism6zb02o";
 import { cleanStringList, isRecord, toString } from "#7iidjfwwxm9c";
-import { walkBootstrapFiles } from "#ojhxpm0lszqj";
+import { walkBootstrapFiles } from "#5m1qr8zj0sdu";
 
 const RESERVED_OPTION_KEYS = new Set([
   "dir",

@@ -1,9 +1,9 @@
-const BOOTSTRAP_LOG_GROUP = "trebired.bootstrap";
+const BOOTSTRAP_LOG_GROUP = "package.bootstrap";
 const DEFAULT_LAST_SUFFIX = "a";
 const IMPORT_REVISION_PARAM = "bootstrap_v";
 
 const VERBOSE_ENV_KEYS = Object.freeze([
-  "TREBIRED_BOOTSTRAP_VERBOSE",
+  "BOOTSTRAP_VERBOSE",
 ]);
 
 export {

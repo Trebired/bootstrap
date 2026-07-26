@@ -11,7 +11,7 @@ type DemoLogger = {
   fail(group: string, message: string, data?: unknown): void;
 };
 
-const rootDir = path.join(os.tmpdir(), "@trebired-bootstrap", "dummy");
+const rootDir = path.join(os.tmpdir(), "@package-bootstrap", "dummy");
 const dir = path.join(rootDir, "src", "backend");
 
 function writeModule(rel: string, source: string): void {

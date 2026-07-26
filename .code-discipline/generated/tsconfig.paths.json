@@ -1,0 +1,108 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "#0co91ca40kwl": [
+        "../../src/params/resolve.ts"
+      ],
+      "#0jlu4wac9xrt": [
+        "../../src/core/bootstrap.ts"
+      ],
+      "#1qrc5lfn1wn7": [
+        "../../examples/server_bootstrap/http/app.1.js"
+      ],
+      "#2g6zs1tw5mep": [
+        "../../src/core/discovery.ts"
+      ],
+      "#3z0wn9c7qkaf": [
+        "../../src/params/extract.ts"
+      ],
+      "#488m3wc238o2": [
+        "../../examples/server.js"
+      ],
+      "#5m1qr8zj0sdu": [
+        "../../src/scan/walk.ts"
+      ],
+      "#63np0sf1s6f9": [
+        "../../src/types.ts"
+      ],
+      "#6dl7qf2opux1": [
+        "../../examples/lifecycle.ts"
+      ],
+      "#6pk4xe2v9lab": [
+        "../../src/core/runtime.ts"
+      ],
+      "#7iidjfwwxm9c": [
+        "../../src/utils/values.ts"
+      ],
+      "#7l8fl6xuos5s": [
+        "../../src/index.ts"
+      ],
+      "#7vfj5fhk8sp9": [
+        "../../src/utils/errors.ts"
+      ],
+      "#7x6frcgppchf": [
+        "../../examples/dummy.ts"
+      ],
+      "#84byqmqnrpqp": [
+        "../../src/core/runtime/lifecycle.ts"
+      ],
+      "#8ogb8252gvss": [
+        "../../examples/server_bootstrap/http/server.a.js"
+      ],
+      "#93ahtzcbfzto": [
+        "../../src/core/runtime/context.ts"
+      ],
+      "#9d18vpqjndij": [
+        "../../src/backend/utils/normalize.ts"
+      ],
+      "#a1s350phpvx6": [
+        "../../src/core/runtime/shared.ts"
+      ],
+      "#ay02yu4mq2ly": [
+        "../../examples/server_bootstrap/http/routes.2.js"
+      ],
+      "#borism6zb02o": [
+        "../../src/utils/files.ts"
+      ],
+      "#bylb7mxgjugd": [
+        "../../src/backend/utils/time.ts"
+      ],
+      "#c5bjtgzvarhf": [
+        "../../src/logging.ts"
+      ],
+      "#cpvuscfrjz8r": [
+        "../../src/frontend/js/utils/text.ts"
+      ],
+      "#dwevoxi8e7xr": [
+        "../../src/core/runtime/scan.ts"
+      ],
+      "#go3m4pwdqt48": [
+        "../../src/constants.ts"
+      ],
+      "#gxv0fwleavl3": [
+        "../../src/suffixes.ts"
+      ],
+      "#kq9yax6ngsap": [
+        "../../src/core/runtime/steps.ts"
+      ],
+      "#my58qsd8qazx": [
+        "../../src/module/handler.ts"
+      ],
+      "#p4w1s2z41nxy": [
+        "../../src/module/import.ts"
+      ],
+      "#ru2fyxjtofyl": [
+        "../../scripts/verify-pack.mjs"
+      ],
+      "#t0phxm6bq4o4": [
+        "../../src/backend/utils/object.ts"
+      ],
+      "#ubr96cc9bt5d": [
+        "../../scripts/prepare-dist.mjs"
+      ],
+      "#vl1kc579x5ul": [
+        "../../src/utils/env.ts"
+      ]
+    }
+  }
+}

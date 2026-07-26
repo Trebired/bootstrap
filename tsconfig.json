@@ -10,119 +10,6 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "noEmit": true,
-    "paths": {
-      "#0co91ca40kwl": [
-        "./src/params/resolve.ts"
-      ],
-      "#63np0sf1s6f9": [
-        "./src/types.ts"
-      ],
-      "#6dl7qf2opux1": [
-        "./examples/lifecycle.ts"
-      ],
-      "#70ymmwextqjp": [
-        "./test/specs/bootstrap/lifecycle.spec.ts"
-      ],
-      "#7iidjfwwxm9c": [
-        "./src/utils/values.ts"
-      ],
-      "#7l8fl6xuos5s": [
-        "./src/index.ts"
-      ],
-      "#7vfj5fhk8sp9": [
-        "./src/utils/errors.ts"
-      ],
-      "#7x6frcgppchf": [
-        "./examples/dummy.ts"
-      ],
-      "#84byqmqnrpqp": [
-        "./src/core/runtime/lifecycle.ts"
-      ],
-      "#8ogb8252gvss": [
-        "./examples/server_bootstrap/http/server.a.js"
-      ],
-      "#9d18vpqjndij": [
-        "./src/backend/utils/normalize.ts"
-      ],
-      "#a0wozz8axihs": [
-        "./test/specs/bootstrap/core.spec.ts"
-      ],
-      "#a1s350phpvx6": [
-        "./src/core/runtime/shared.ts"
-      ],
-      "#borism6zb02o": [
-        "./src/utils/files.ts"
-      ],
-      "#bx8enmwn9jyh": [
-        "./test/specs/bootstrap/rules.spec.ts"
-      ],
-      "#bylb7mxgjugd": [
-        "./src/backend/utils/time.ts"
-      ],
-      "#c5bjtgzvarhf": [
-        "./src/logging.ts"
-      ],
-      "#cpvuscfrjz8r": [
-        "./src/frontend/js/utils/text.ts"
-      ],
-      "#db0yv6wxqj45": [
-        "./examples/server.js"
-      ],
-      "#dosx75o5vka5": [
-        "./examples/server_bootstrap/http/routes.2.js"
-      ],
-      "#ew62df5jlvoi": [
-        "./tb.code-discipline.ts"
-      ],
-      "#f931g6zwzlos": [
-        "./src/params/extract.ts"
-      ],
-      "#go3m4pwdqt48": [
-        "./src/constants.ts"
-      ],
-      "#gxv0fwleavl3": [
-        "./src/suffixes.ts"
-      ],
-      "#kq9yax6ngsap": [
-        "./src/core/runtime/steps.ts"
-      ],
-      "#lf1epxji4pya": [
-        "./src/core/runtime/context.ts"
-      ],
-      "#my58qsd8qazx": [
-        "./src/module/handler.ts"
-      ],
-      "#ojhxpm0lszqj": [
-        "./src/scan/walk.ts"
-      ],
-      "#p4w1s2z41nxy": [
-        "./src/module/import.ts"
-      ],
-      "#qilcfd27tkyu": [
-        "./examples/server_bootstrap/http/app.1.js"
-      ],
-      "#s6ay5bw6g2k0": [
-        "./src/core/bootstrap.ts"
-      ],
-      "#t0phxm6bq4o4": [
-        "./src/backend/utils/object.ts"
-      ],
-      "#ul1bq2mdcsmm": [
-        "./src/core/runtime.ts"
-      ],
-      "#vl1kc579x5ul": [
-        "./src/utils/env.ts"
-      ],
-      "#xtwgvyadcr0h": [
-        "./src/core/discovery.ts"
-      ],
-      "#yf969jk7frvx": [
-        "./src/core/runtime/scan.ts"
-      ],
-      "#you8100fjr92": [
-        "./test/specs/helpers.ts"
-      ]
-    },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": false,
@@ -135,9 +22,9 @@
   "exclude": [
     "node_modules"
   ],
+  "extends": "./.code-discipline/generated/tsconfig.paths.json",
   "include": [
     "examples/**/*.ts",
-    "src/**/*.ts",
-    "test/**/*.ts"
+    "src/**/*.ts"
   ]
 }
