@@ -1,4 +1,4 @@
-export { BOOTSTRAP_LOG_GROUP, VERBOSE_ENV_KEYS } from "./constants.js";
+export { BOOTSTRAP_LOG_GROUP, BOOTSTRAP_PACKAGE_NAME, VERBOSE_ENV_KEYS } from "./constants.js";
 export { bootstrap } from "./core/bootstrap.js";
 export { createBootstrap } from "./core/runtime.js";
 export { default } from "./core/bootstrap.js";

@@ -125,7 +125,7 @@ function createInvocationResult(
   };
 
   if (kind === "ok") {
-    return result.ok("Bootstrap module invoked.", { data, details });
+    return result.ok("bootstrap-module-invoked", { data, details });
   }
 
   if (kind === "noop") {

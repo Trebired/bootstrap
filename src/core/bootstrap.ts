@@ -1,6 +1,6 @@
 import { logPackageInitialized } from "@package/logger-adapter";
 
-import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
+import { BOOTSTRAP_LOG_GROUP, BOOTSTRAP_PACKAGE_NAME } from "#go3m4pwdqt48";
 import { resolveLogger } from "#c5bjtgzvarhf";
 import { loadModuleFile, nextImportRevision } from "#p4w1s2z41nxy";
 import { invokeModuleHandler, resolveModuleHandler } from "#my58qsd8qazx";
@@ -52,7 +52,7 @@ function createBootstrapLogger(options: BootstrapOptions) {
     fallback: "console",
     group: BOOTSTRAP_LOG_GROUP,
     logger: options.logger,
-    source: "@package/bootstrap",
+    source: BOOTSTRAP_PACKAGE_NAME,
   });
   return resolveLogger(options.logger, options.loggerAdapter);
 }

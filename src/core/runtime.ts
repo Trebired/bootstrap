@@ -1,6 +1,6 @@
 import { logPackageInitialized } from "@package/logger-adapter";
 
-import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
+import { BOOTSTRAP_LOG_GROUP, BOOTSTRAP_PACKAGE_NAME } from "#go3m4pwdqt48";
 import { resolveLogger } from "#c5bjtgzvarhf";
 import { envVerbose } from "#vl1kc579x5ul";
 import { formatError } from "#7vfj5fhk8sp9";
@@ -91,7 +91,7 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
       fallback: "console",
       group: BOOTSTRAP_LOG_GROUP,
       logger: options.logger,
-      source: "@package/bootstrap",
+      source: BOOTSTRAP_PACKAGE_NAME,
     });
 
     if (this.lifecycleOptions.onEvent) {

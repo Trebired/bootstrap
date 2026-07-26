@@ -4,6 +4,11 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.7
+
+- Added package-owned organization metadata and derived bootstrap log groups from `package.json`.
+- Updated internal package dependency ranges to the current sibling package releases.
+
 ## 1.1.6
 
 - Removed dead test scripts and stale test commands from publish workflows and maintainer docs.

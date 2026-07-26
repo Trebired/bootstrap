@@ -1,6 +1,7 @@
 {
   "#0co91ca40kwl": "./src/params/resolve.ts",
   "#0jlu4wac9xrt": "./src/core/bootstrap.ts",
+  "#1nadc3z2pnei": "./src/package-metadata.ts",
   "#1qrc5lfn1wn7": "./examples/server_bootstrap/http/app.1.js",
   "#2g6zs1tw5mep": "./src/core/discovery.ts",
   "#3z0wn9c7qkaf": "./src/params/extract.ts",
