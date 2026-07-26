@@ -4,6 +4,10 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.6
+
+- Removed dead test scripts and stale test commands from publish workflows and maintainer docs.
+
 ## 1.1.5
 
 - Removed package test suites and banned committed `*.spec.ts`/`*.spec.tsx` files through Code Discipline.
@@ -64,3 +68,5 @@ This project follows semantic versioning once published.
 - Added a plain `examples/server.js` example with matching bootstrap files.
 - Added a summary return value with scanned, loaded, skipped, and failed counts.
 - Added bootstrap-specific verbose environment variables and `@trebired/logger`-style logger support.
+
+- Standardized package metadata ordering and contributing guidance around the Trebired writing style.
