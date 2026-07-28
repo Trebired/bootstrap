@@ -4,6 +4,14 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.2.0
+
+- Added `createBootstrapLifecycleLogger()` for converting structured lifecycle events into logger output with generic normalized metadata and configurable groups/levels.
+- Added `createBootstrapShutdownController()` for idempotent lifecycle shutdown requests with degrade, shutdown, optional termination, and separate failure logging.
+- Added `bindBootstrapShutdownSignals()` and controller signal binding through injected registration callbacks, without importing Node process globals.
+- Added callback-style owned resource cleanup support for methods such as `close(callback)` while preserving sync, promise, timeout, and force cleanup behavior.
+- Added runtime verification coverage for lifecycle logging, shutdown controllers, signal binding, and disposable cleanup styles.
+
 ## 1.1.7
 
 - Added package-owned organization metadata and derived bootstrap log groups from `package.json`.

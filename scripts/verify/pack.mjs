@@ -3,7 +3,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const tempRoot = path.join(rootDir, ".tmp", "verify-pack");
 const npmCacheDir = path.join(tempRoot, "npm-cache");
 const packageJsonBackupPath = path.join(rootDir, ".tmp", "package.json.backup");
@@ -191,18 +191,21 @@ async function writeConsumerPackageJson(consumerDir, tarballPath) {
 
 async function writeConsumerSourceFiles(consumerDir) {
   await fs.writeFile(path.join(consumerDir, "index.ts"), [
-    'import bootstrap, { createBootstrap } from "@package/bootstrap";',
+    'import bootstrap, { bindBootstrapShutdownSignals, createBootstrap, createBootstrapLifecycleLogger, createBootstrapShutdownController } from "@package/bootstrap";',
     "",
     "const runtime = createBootstrap;",
+    "const lifecycleLogger = createBootstrapLifecycleLogger;",
+    "const shutdownController = createBootstrapShutdownController;",
+    "const signalBinder = bindBootstrapShutdownSignals;",
     "const entrypoint = bootstrap;",
     "",
-    "console.log(Boolean(runtime), Boolean(entrypoint));",
+    "console.log(Boolean(runtime), Boolean(lifecycleLogger), Boolean(shutdownController), Boolean(signalBinder), Boolean(entrypoint));",
   ].join("\n"));
 
   await fs.writeFile(path.join(consumerDir, "runtime.mjs"), [
-    'import bootstrap, { createBootstrap } from "@package/bootstrap";',
+    'import bootstrap, { bindBootstrapShutdownSignals, createBootstrap, createBootstrapLifecycleLogger, createBootstrapShutdownController } from "@package/bootstrap";',
     "",
-    "console.log(typeof bootstrap, typeof createBootstrap);",
+    "console.log(typeof bootstrap, typeof createBootstrap, typeof createBootstrapLifecycleLogger, typeof createBootstrapShutdownController, typeof bindBootstrapShutdownSignals);",
   ].join("\n"));
 }
 

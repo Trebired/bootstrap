@@ -7,6 +7,7 @@ import type {
   BootstrapSubsystemDefinition,
   LifecycleState,
 } from "#63np0sf1s6f9";
+import { invokeCleanupFunction } from "./cleanup.js";
 
 export type InternalOwnedResource = {
   cleanup: () => Promise<void>;
@@ -53,12 +54,16 @@ function isFunction(value: unknown): value is (...args: unknown[]) => unknown {
 }
 
 function hasOwnFunction(obj: unknown, key: string): boolean {
+  return Boolean(resolveObjectFunction(obj, key));
+}
+
+function resolveObjectFunction(obj: unknown, key: string): ((...args: unknown[]) => unknown) | null {
   if (!obj || typeof obj !== "object") {
-    return false;
+    return null;
   }
 
-  const descriptor = Object.getOwnPropertyDescriptor(obj, key);
-  return Boolean(descriptor && typeof descriptor.value === "function");
+  const value = (obj as Record<string, unknown>)[key];
+  return typeof value === "function" ? value as (...args: unknown[]) => unknown : null;
 }
 
 function isDisposableObject(value: unknown): value is Exclude<BootstrapDisposable, Function> {
@@ -166,11 +171,11 @@ function createExplicitCleanup(
 ) {
   return {
     cleanup: async () => {
-      await Promise.resolve(cleanup(resource));
+      await invokeCleanupFunction(cleanup as (...args: unknown[]) => unknown, undefined, [resource]);
     },
     forceCleanup: forceCleanup
       ? async () => {
-        await Promise.resolve(forceCleanup(resource));
+        await invokeCleanupFunction(forceCleanup as (...args: unknown[]) => unknown, undefined, [resource]);
       }
       : null,
   };
@@ -182,11 +187,11 @@ function createFunctionCleanup(
 ) {
   return {
     cleanup: async () => {
-      await Promise.resolve(resource());
+      await invokeCleanupFunction(resource, undefined, []);
     },
     forceCleanup: forceCleanup
       ? async () => {
-        await Promise.resolve(forceCleanup(resource));
+        await invokeCleanupFunction(forceCleanup as (...args: unknown[]) => unknown, undefined, [resource]);
       }
       : null,
   };
@@ -208,7 +213,7 @@ function createObjectCleanup(
 
   return {
     cleanup: async () => {
-      await Promise.resolve((resource as Record<string, (...args: unknown[]) => unknown>)[method]());
+      await invokeCleanupFunction(resolveObjectFunction(resource, method)!, resource, []);
     },
     forceCleanup: resolveForceCleanup(resource, method, forceCleanup),
   };
@@ -221,7 +226,7 @@ function resolveForceCleanup(
 ): (() => Promise<void>) | null {
   if (forceCleanup) {
     return async () => {
-      await Promise.resolve(forceCleanup(resource));
+      await invokeCleanupFunction(forceCleanup as (...args: unknown[]) => unknown, undefined, [resource]);
     };
   }
 
@@ -232,7 +237,7 @@ function resolveForceCleanup(
   }
 
   return async () => {
-    await Promise.resolve((resource as Record<string, (...args: unknown[]) => unknown>)[forceMethod]());
+    await invokeCleanupFunction(resolveObjectFunction(resource, forceMethod)!, resource, []);
   };
 }
 

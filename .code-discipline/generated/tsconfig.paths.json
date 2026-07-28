@@ -16,6 +16,9 @@
       "#2g6zs1tw5mep": [
         "../../src/core/discovery.ts"
       ],
+      "#2shschcpicb4": [
+        "../../scripts/verify/runtime.mjs"
+      ],
       "#3z0wn9c7qkaf": [
         "../../src/params/extract.ts"
       ],
@@ -61,8 +64,14 @@
       "#a1s350phpvx6": [
         "../../src/core/runtime/shared.ts"
       ],
+      "#aghqerz5ysqt": [
+        "../../scripts/verify/pack.mjs"
+      ],
       "#ay02yu4mq2ly": [
         "../../examples/server_bootstrap/http/routes.2.js"
+      ],
+      "#bbwm0w61wjlp": [
+        "../../src/core/runtime/cleanup.ts"
       ],
       "#borism6zb02o": [
         "../../src/utils/files.ts"
@@ -94,17 +103,20 @@
       "#p4w1s2z41nxy": [
         "../../src/module/import.ts"
       ],
-      "#ru2fyxjtofyl": [
-        "../../scripts/verify-pack.mjs"
-      ],
       "#t0phxm6bq4o4": [
         "../../src/backend/utils/object.ts"
+      ],
+      "#tq3pg9l225et": [
+        "../../src/core/runtime/logger.ts"
       ],
       "#ubr96cc9bt5d": [
         "../../scripts/prepare-dist.mjs"
       ],
       "#vl1kc579x5ul": [
         "../../src/utils/env.ts"
+      ],
+      "#xnrvgvwvs11x": [
+        "../../src/core/runtime/shutdown-controller.ts"
       ]
     }
   }

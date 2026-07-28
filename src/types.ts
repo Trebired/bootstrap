@@ -79,6 +79,18 @@ type BootstrapLifecycleEvent = {
 
 type BootstrapLifecycleListener = (event: BootstrapLifecycleEvent) => void;
 
+type BootstrapLifecycleLoggerLevel = "error" | "fail" | "info" | "warn";
+
+type BootstrapLifecycleLoggerLevelResolver = (event: BootstrapLifecycleEvent) => BootstrapLifecycleLoggerLevel;
+
+type BootstrapLifecycleLoggerOptions = {
+  group?: string;
+  level?: BootstrapLifecycleLoggerLevelResolver;
+  logger?: BootstrapLogger;
+  loggerAdapter?: BootstrapLoggerAdapter;
+  message?: (event: BootstrapLifecycleEvent) => string;
+};
+
 type BootstrapLifecycleOptions = {
   shutdownTimeoutMs?: number;
   allowRestart?: boolean;
@@ -241,6 +253,51 @@ type BootstrapRuntime = {
   onEvent: (listener: BootstrapLifecycleListener) => () => void;
 };
 
+type BootstrapShutdownControllerOptions = {
+  defaultExitCode?: number;
+  group?: string;
+  logger?: BootstrapLogger;
+  loggerAdapter?: BootstrapLoggerAdapter;
+  terminate?: (exitCode: number) => unknown | Promise<unknown>;
+  timeoutMs?: number;
+};
+
+type BootstrapShutdownControllerRequestOptions = BootstrapShutdownOptions & {
+  exitCode?: number;
+};
+
+type BootstrapShutdownControllerResult = {
+  degradeError?: unknown;
+  degraded?: BootstrapDegradeReport;
+  exitCode: number;
+  reason?: string;
+  shutdown?: BootstrapShutdownReport;
+  shutdownError?: unknown;
+  terminated: boolean;
+};
+
+type BootstrapSignalRegistrationCleanup =
+  | void
+  | (() => unknown)
+  | {
+    dispose?: () => unknown;
+    off?: () => unknown;
+    remove?: () => unknown;
+    unsubscribe?: () => unknown;
+  };
+
+type BootstrapShutdownSignalBindingOptions = {
+  exitCode?: number;
+  once: (signal: string, handler: () => void) => BootstrapSignalRegistrationCleanup;
+  reason?: (signal: string) => string;
+  signals?: readonly string[];
+};
+
+type BootstrapShutdownController = {
+  bindSignals: (options: BootstrapShutdownSignalBindingOptions) => () => void;
+  request: (options?: BootstrapShutdownControllerRequestOptions) => Promise<BootstrapShutdownControllerResult>;
+};
+
 type BootstrapExportShape = "function" | "attach";
 
 type BootstrapHandler = {
@@ -281,6 +338,9 @@ export type {
   BootstrapHandler,
   BootstrapLifecycleEvent,
   BootstrapLifecycleListener,
+  BootstrapLifecycleLoggerLevel,
+  BootstrapLifecycleLoggerLevelResolver,
+  BootstrapLifecycleLoggerOptions,
   BootstrapLifecycleOptions,
   BootstrapLogEvent,
   BootstrapLogger,
@@ -294,10 +354,16 @@ export type {
   BootstrapRunReport,
   BootstrapRuntime,
   BootstrapScanOptions,
+  BootstrapShutdownController,
+  BootstrapShutdownControllerOptions,
+  BootstrapShutdownControllerRequestOptions,
+  BootstrapShutdownControllerResult,
   BootstrapShutdownContext,
   BootstrapShutdownOptions,
   BootstrapShutdownReport,
+  BootstrapShutdownSignalBindingOptions,
   BootstrapShutdownStepResult,
+  BootstrapSignalRegistrationCleanup,
   BootstrapSnapshot,
   BootstrapSubsystemDefinition,
   BootstrapSubsystemRef,

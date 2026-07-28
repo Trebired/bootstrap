@@ -268,6 +268,14 @@ Recognized cleanup methods include:
 - `abort()`
 - `kill()`
 
+Cleanup methods may be synchronous, promise-returning, or Node-style callback methods:
+
+```ts
+context.own(server, { name: "server" });
+```
+
+For a resource like `server.close(callback)`, shutdown waits until the callback fires. If the callback receives an error, the cleanup step is reported as failed.
+
 Use `context.addCleanup(...)` for plain functions:
 
 ```ts
@@ -342,15 +350,60 @@ The runtime emits structured events for:
 Example:
 
 ```ts
+import { createBootstrapLifecycleLogger } from "@trebired/bootstrap";
+
 const runtime = createBootstrap({
   lifecycle: {
-    onEvent(event) {
-      console.log(event.type, event.state, event.subsystemId);
-    },
+    onEvent: createBootstrapLifecycleLogger({
+      logger,
+      group: "startup.lifecycle",
+    }),
   },
   subsystems: [...],
 });
 ```
+
+The lifecycle logger writes structured metadata using generic keys such as `state`, `phase`, `subsystem_id`, `target`, `name`, `duration_ms`, `timeout_ms`, `reason`, `readiness`, `availability`, and `error`. By default, `bootstrap:failure`, `hook:failure`, and `shutdown:forced` are logged as warnings; other events are logged as info. Pass `level` when a project needs a different level policy.
+
+## Shutdown Controller
+
+Use `createBootstrapShutdownController()` when a host needs one place to request graceful shutdown, log the request, and optionally terminate after lifecycle attempts complete:
+
+```ts
+import { createBootstrapShutdownController } from "@trebired/bootstrap";
+
+const shutdown = createBootstrapShutdownController(runtime, {
+  logger,
+  group: "startup.lifecycle",
+  timeoutMs: 8_000,
+  defaultExitCode: 0,
+  terminate(exitCode) {
+    process.exit(exitCode);
+  },
+});
+
+await shutdown.request({
+  reason: "signal:SIGTERM",
+  exitCode: 0,
+});
+```
+
+Shutdown requests are idempotent. Repeated calls while a request is in flight return the same work, and later calls safely return the completed result. The controller calls `runtime.degrade({ reason })` and then `runtime.shutdown({ reason, timeoutMs })`, logs degrade and shutdown failures separately when a logger is provided, and never imports or depends on Node process globals.
+
+Bind signals through injected registration:
+
+```ts
+const unbindSignals = shutdown.bindSignals({
+  signals: ["SIGINT", "SIGTERM", "SIGHUP"],
+  once: (signal, handler) => process.once(signal, handler),
+  reason: (signal) => `signal:${signal}`,
+  exitCode: 0,
+});
+
+unbindSignals();
+```
+
+`bindBootstrapShutdownSignals()` is also exported when a caller wants the binding helper separate from the controller instance.
 
 ## Directory Scan Mode
 
