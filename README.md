@@ -81,7 +81,9 @@ await runtime.degrade({ reason: "deployment" });
 await runtime.shutdown({ reason: "deployment" });
 ```
 
-## Lifecycle Model
+## Concepts
+
+### Lifecycle Model
 
 The runtime exposes explicit lifecycle states:
 
@@ -106,7 +108,7 @@ Common flow:
 
 If startup fails after some subsystems already started, the runtime moves through `failed` and then cleans up what was already started.
 
-## Programmatic Subsystems
+### Programmatic Subsystems
 
 Startup and teardown belong to the same subsystem definition:
 
@@ -145,70 +147,7 @@ Subsystem fields:
 - `shutdown(context)`: optional teardown hook
 - `order`: optional numeric tie-breaker when no dependency relationship exists
 
-## Runtime API
-
-```ts
-import { createBootstrap } from "@trebired/bootstrap";
-
-const runtime = createBootstrap(options);
-```
-
-Runtime methods:
-
-- `runtime.registerSubsystem(subsystem)`
-- `runtime.bootstrap()`
-- `runtime.degrade({ reason? })`
-- `runtime.shutdown({ reason?, timeoutMs? })`
-- `runtime.getState()`
-- `runtime.getSnapshot()`
-- `runtime.isReady()`
-- `runtime.isAvailable()`
-- `runtime.onEvent(listener)`
-
-`bootstrap()` on the runtime returns a structured report:
-
-```ts
-type BootstrapRunReport = {
-  state: "ready" | "degrading";
-  readiness: boolean;
-  availability: boolean;
-  summary: {
-    scanned: number;
-    loaded: number;
-    skipped: number;
-    failed: number;
-  };
-  startedSubsystems: string[];
-  failedSubsystems: string[];
-};
-```
-
-`shutdown()` returns a structured teardown report:
-
-```ts
-type BootstrapShutdownReport = {
-  state: "stopped";
-  timeoutMs: number | null;
-  reason?: string;
-  steps: Array<{
-    target: "subsystem" | "resource";
-    phase: "degrade" | "shutdown" | "cleanup";
-    subsystemId: string;
-    name: string;
-    status: "completed" | "failed" | "timed_out" | "forced";
-    durationMs: number;
-    error?: unknown;
-  }>;
-  completed: string[];
-  failed: string[];
-  timedOut: string[];
-  forced: string[];
-};
-```
-
-Repeated shutdown calls are safe and idempotent. If shutdown is already in progress, callers get the same in-flight result.
-
-## Graceful Degradation
+### Graceful Degradation
 
 Applications often need to stop accepting new work before they fully shut down.
 
@@ -241,7 +180,198 @@ Inside subsystem hooks you can control readiness directly:
 }
 ```
 
-## Owned Resources And Disposables
+### Shutdown Timeouts And Forced Teardown
+
+Set a default timeout for the runtime:
+
+```ts
+const runtime = createBootstrap({
+  lifecycle: {
+    shutdownTimeoutMs: 15_000,
+  },
+  subsystems: [...],
+});
+```
+
+Or override it for a single shutdown call:
+
+```ts
+await runtime.shutdown({
+  reason: "sigterm",
+  timeoutMs: 5_000,
+});
+```
+
+If cleanup runs past the timeout:
+
+- the report marks the step as `timed_out`
+- if a force cleanup handler exists, the step is reported as `forced`
+- a `shutdown:forced` lifecycle event is emitted
+
+This makes it clear what stopped cleanly and what had to be forced.
+
+### Structured Lifecycle Events
+
+Subscribe to lifecycle events through `runtime.onEvent(...)` or `lifecycle.onEvent` in the constructor.
+
+The runtime emits structured events for:
+
+- bootstrap start, finish, and failure
+- readiness enabled and disabled
+- shutdown requested
+- hook start, finish, and failure
+- forced shutdown
+- final stopped state
+
+Example:
+
+```ts
+import { createBootstrapLifecycleLogger } from "@trebired/bootstrap";
+
+const runtime = createBootstrap({
+  lifecycle: {
+    onEvent: createBootstrapLifecycleLogger({
+      logger,
+      group: "startup.lifecycle",
+    }),
+  },
+  subsystems: [...],
+});
+```
+
+The lifecycle logger writes structured metadata using generic keys such as `state`, `phase`, `subsystem_id`, `target`, `name`, `duration_ms`, `timeout_ms`, `reason`, `readiness`, `availability`, and `error`. By default, `bootstrap:failure`, `hook:failure`, and `shutdown:forced` are logged as warnings; other events are logged as info. Pass `level` when a project needs a different level policy.
+
+### Shutdown Controller
+
+Use `createBootstrapShutdownController()` when a host needs one place to request graceful shutdown, log the request, and optionally terminate after lifecycle attempts complete:
+
+```ts
+import { createBootstrapShutdownController } from "@trebired/bootstrap";
+
+const shutdown = createBootstrapShutdownController(runtime, {
+  logger,
+  group: "startup.lifecycle",
+  timeoutMs: 8_000,
+  defaultExitCode: 0,
+  terminate(exitCode) {
+    process.exit(exitCode);
+  },
+});
+
+await shutdown.request({
+  reason: "signal:SIGTERM",
+  exitCode: 0,
+});
+```
+
+Shutdown requests are idempotent. Repeated calls while a request is in flight return the same work, and later calls safely return the completed result. The controller calls `runtime.degrade({ reason })` and then `runtime.shutdown({ reason, timeoutMs })`, logs degrade and shutdown failures separately when a logger is provided, and never imports or depends on Node process globals.
+
+Bind signals through injected registration:
+
+```ts
+const unbindSignals = shutdown.bindSignals({
+  signals: ["SIGINT", "SIGTERM", "SIGHUP"],
+  once: (signal, handler) => process.once(signal, handler),
+  reason: (signal) => `signal:${signal}`,
+  exitCode: 0,
+});
+
+unbindSignals();
+```
+
+`bindBootstrapShutdownSignals()` is also exported when a caller wants the binding helper separate from the controller instance.
+
+### Directory Scan Mode
+
+The original directory-based startup loader remains intact.
+
+`bootstrap()` still:
+
+- scans first-level child directories under `dir`
+- walks them recursively
+- loads only `.js`, `.mjs`, `.ts`, and `.mts`
+- runs only ordered files like `.1`, `.2`, and the final suffix such as `.a`
+- injects non-option top-level keys by parameter name
+
+Example:
+
+```ts
+await bootstrap({
+  dir: "/srv/app/src/backend",
+  config,
+  db,
+  log,
+  logger: log,
+  scan: {
+    dirs: {
+      include: ["db", "http", "jobs"],
+      exclude: ["legacy", "db/fixtures"],
+    },
+    files: {
+      excludeSuffixes: ["spec", "test", "d"],
+      lastSuffix: "a",
+    },
+  },
+});
+```
+
+Reserved option keys are:
+
+- `dir`
+- `scan`
+- `verbose`
+- `logger`
+- `loggerAdapter`
+- `lifecycle`
+- `subsystems`
+
+Everything else remains injectable as a dependency.
+
+### Lifecycle-Aware Scanned Modules
+
+Scanned modules can stay in the old attach-function form, or they can use the newer subsystem model.
+
+Example scanned subsystem module:
+
+```ts
+export default {
+  id: "http",
+  dependsOn: ["db"],
+  async bootstrap(context) {
+    const server = context.deps.http.createServer(context.deps.app);
+    await new Promise((resolve) => server.listen(3000, resolve));
+    context.own(server, { name: "http-server" });
+  },
+  async degrade(context) {
+    context.readiness.disable("draining");
+    context.availability.disable("draining");
+  },
+  async shutdown() {
+    await flushPendingLogs();
+  },
+};
+```
+
+or:
+
+```ts
+export const subsystem = {
+  id: "jobs",
+  async bootstrap(context) {
+    const consumer = startQueueConsumer();
+    context.own(consumer, { name: "queue-consumer" });
+  },
+  async shutdown() {
+    await drainQueue();
+  },
+};
+```
+
+These scanned subsystem modules work with `createBootstrap({ dir, ...deps })`.
+
+## Runtime
+
+### Owned Resources And Disposables
 
 Bootstrap contexts make cleanup registration explicit and local to the subsystem that created the resource.
 
@@ -304,196 +434,88 @@ context.own(server, {
 
 Owned resources are cleaned up after the subsystem's `shutdown()` hook, in reverse registration order.
 
-## Shutdown Timeouts And Forced Teardown
+### Logger Support
 
-Set a default timeout for the runtime:
+`logger` and `loggerAdapter` still behave the same as before for bootstrap's own logging.
+
+The runtime also emits structured lifecycle events through `onEvent`, which is the preferred observability surface for orchestration state.
+
+### Example Files
+
+Examples live under [examples](./examples):
+
+- [examples/dummy.ts](./examples/dummy.ts)
+- [examples/lifecycle.ts](./examples/lifecycle.ts)
+- [examples/server.js](./examples/server.js)
+
+## Public API
+
+### Runtime API
 
 ```ts
-const runtime = createBootstrap({
-  lifecycle: {
-    shutdownTimeoutMs: 15_000,
-  },
-  subsystems: [...],
-});
+import { createBootstrap } from "@trebired/bootstrap";
+
+const runtime = createBootstrap(options);
 ```
 
-Or override it for a single shutdown call:
+Runtime methods:
+
+- `runtime.registerSubsystem(subsystem)`
+- `runtime.bootstrap()`
+- `runtime.degrade({ reason? })`
+- `runtime.shutdown({ reason?, timeoutMs? })`
+- `runtime.getState()`
+- `runtime.getSnapshot()`
+- `runtime.isReady()`
+- `runtime.isAvailable()`
+- `runtime.onEvent(listener)`
+
+`bootstrap()` on the runtime returns a structured report:
 
 ```ts
-await runtime.shutdown({
-  reason: "sigterm",
-  timeoutMs: 5_000,
-});
-```
-
-If cleanup runs past the timeout:
-
-- the report marks the step as `timed_out`
-- if a force cleanup handler exists, the step is reported as `forced`
-- a `shutdown:forced` lifecycle event is emitted
-
-This makes it clear what stopped cleanly and what had to be forced.
-
-## Structured Lifecycle Events
-
-Subscribe to lifecycle events through `runtime.onEvent(...)` or `lifecycle.onEvent` in the constructor.
-
-The runtime emits structured events for:
-
-- bootstrap start, finish, and failure
-- readiness enabled and disabled
-- shutdown requested
-- hook start, finish, and failure
-- forced shutdown
-- final stopped state
-
-Example:
-
-```ts
-import { createBootstrapLifecycleLogger } from "@trebired/bootstrap";
-
-const runtime = createBootstrap({
-  lifecycle: {
-    onEvent: createBootstrapLifecycleLogger({
-      logger,
-      group: "startup.lifecycle",
-    }),
-  },
-  subsystems: [...],
-});
-```
-
-The lifecycle logger writes structured metadata using generic keys such as `state`, `phase`, `subsystem_id`, `target`, `name`, `duration_ms`, `timeout_ms`, `reason`, `readiness`, `availability`, and `error`. By default, `bootstrap:failure`, `hook:failure`, and `shutdown:forced` are logged as warnings; other events are logged as info. Pass `level` when a project needs a different level policy.
-
-## Shutdown Controller
-
-Use `createBootstrapShutdownController()` when a host needs one place to request graceful shutdown, log the request, and optionally terminate after lifecycle attempts complete:
-
-```ts
-import { createBootstrapShutdownController } from "@trebired/bootstrap";
-
-const shutdown = createBootstrapShutdownController(runtime, {
-  logger,
-  group: "startup.lifecycle",
-  timeoutMs: 8_000,
-  defaultExitCode: 0,
-  terminate(exitCode) {
-    process.exit(exitCode);
-  },
-});
-
-await shutdown.request({
-  reason: "signal:SIGTERM",
-  exitCode: 0,
-});
-```
-
-Shutdown requests are idempotent. Repeated calls while a request is in flight return the same work, and later calls safely return the completed result. The controller calls `runtime.degrade({ reason })` and then `runtime.shutdown({ reason, timeoutMs })`, logs degrade and shutdown failures separately when a logger is provided, and never imports or depends on Node process globals.
-
-Bind signals through injected registration:
-
-```ts
-const unbindSignals = shutdown.bindSignals({
-  signals: ["SIGINT", "SIGTERM", "SIGHUP"],
-  once: (signal, handler) => process.once(signal, handler),
-  reason: (signal) => `signal:${signal}`,
-  exitCode: 0,
-});
-
-unbindSignals();
-```
-
-`bindBootstrapShutdownSignals()` is also exported when a caller wants the binding helper separate from the controller instance.
-
-## Directory Scan Mode
-
-The original directory-based startup loader remains intact.
-
-`bootstrap()` still:
-
-- scans first-level child directories under `dir`
-- walks them recursively
-- loads only `.js`, `.mjs`, `.ts`, and `.mts`
-- runs only ordered files like `.1`, `.2`, and the final suffix such as `.a`
-- injects non-option top-level keys by parameter name
-
-Example:
-
-```ts
-await bootstrap({
-  dir: "/srv/app/src/backend",
-  config,
-  db,
-  log,
-  logger: log,
-  scan: {
-    dirs: {
-      include: ["db", "http", "jobs"],
-      exclude: ["legacy", "db/fixtures"],
-    },
-    files: {
-      excludeSuffixes: ["spec", "test", "d"],
-      lastSuffix: "a",
-    },
-  },
-});
-```
-
-Reserved option keys are:
-
-- `dir`
-- `scan`
-- `verbose`
-- `logger`
-- `loggerAdapter`
-- `lifecycle`
-- `subsystems`
-
-Everything else remains injectable as a dependency.
-
-## Lifecycle-Aware Scanned Modules
-
-Scanned modules can stay in the old attach-function form, or they can use the newer subsystem model.
-
-Example scanned subsystem module:
-
-```ts
-export default {
-  id: "http",
-  dependsOn: ["db"],
-  async bootstrap(context) {
-    const server = context.deps.http.createServer(context.deps.app);
-    await new Promise((resolve) => server.listen(3000, resolve));
-    context.own(server, { name: "http-server" });
-  },
-  async degrade(context) {
-    context.readiness.disable("draining");
-    context.availability.disable("draining");
-  },
-  async shutdown() {
-    await flushPendingLogs();
-  },
+type BootstrapRunReport = {
+  state: "ready" | "degrading";
+  readiness: boolean;
+  availability: boolean;
+  summary: {
+    scanned: number;
+    loaded: number;
+    skipped: number;
+    failed: number;
+  };
+  startedSubsystems: string[];
+  failedSubsystems: string[];
 };
 ```
 
-or:
+`shutdown()` returns a structured teardown report:
 
 ```ts
-export const subsystem = {
-  id: "jobs",
-  async bootstrap(context) {
-    const consumer = startQueueConsumer();
-    context.own(consumer, { name: "queue-consumer" });
-  },
-  async shutdown() {
-    await drainQueue();
-  },
+type BootstrapShutdownReport = {
+  state: "stopped";
+  timeoutMs: number | null;
+  reason?: string;
+  steps: Array<{
+    target: "subsystem" | "resource";
+    phase: "degrade" | "shutdown" | "cleanup";
+    subsystemId: string;
+    name: string;
+    status: "completed" | "failed" | "timed_out" | "forced";
+    durationMs: number;
+    error?: unknown;
+  }>;
+  completed: string[];
+  failed: string[];
+  timedOut: string[];
+  forced: string[];
 };
 ```
 
-These scanned subsystem modules work with `createBootstrap({ dir, ...deps })`.
+Repeated shutdown calls are safe and idempotent. If shutdown is already in progress, callers get the same in-flight result.
 
-## Legacy Compatibility
+## Migration Notes
+
+### Legacy Compatibility
 
 Existing bootstrap-only consumers keep working:
 
@@ -504,20 +526,14 @@ Existing bootstrap-only consumers keep working:
 
 If you only need one-shot startup, nothing has to change.
 
-## Logger Support
+## What It Does Not Do
 
-`logger` and `loggerAdapter` still behave the same as before for bootstrap's own logging.
+This package does not:
 
-The runtime also emits structured lifecycle events through `onEvent`, which is the preferred observability surface for orchestration state.
-
-## Example Files
-
-Examples live under [examples](./examples):
-
-- [examples/dummy.ts](./examples/dummy.ts)
-- [examples/lifecycle.ts](./examples/lifecycle.ts)
-- [examples/server.js](./examples/server.js)
+- assume HTTP, queue, worker, or process-exit ownership
+- hide subsystem order or resource teardown behind globals
+- build an application-specific subsystem graph
 
 ## License
 
-MIT
+Licensed under MIT. See [LICENSE](./LICENSE).
