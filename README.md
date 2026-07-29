@@ -533,7 +533,3 @@ This package does not:
 - assume HTTP, queue, worker, or process-exit ownership
 - hide subsystem order or resource teardown behind globals
 - build an application-specific subsystem graph
-
-## License
-
-Licensed under MIT. See [LICENSE](./LICENSE).
