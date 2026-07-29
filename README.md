@@ -1,6 +1,6 @@
 # @trebired/bootstrap
 
-`@trebired/bootstrap` is a generic application lifecycle orchestrator for Bun and Node.js.
+`@trebired/bootstrap` is a generic application lifecycle orchestrator for Bun.
 
 It still supports the original ordered startup scan model through `bootstrap()`, and now also provides a first-class runtime API through `createBootstrap()` so applications can:
 
@@ -15,13 +15,13 @@ The package stays framework-agnostic. It does not assume HTTP, queues, workers, 
 
 ## Install
 
-Runtime support: Bun 1+ and Node.js 18+.
+Runtime support: Bun 1+.
 
 ```sh
-npm install @trebired/bootstrap
+bun i @trebired/bootstrap
 ```
 
-## Two Ways To Use It
+## Quick Start
 
 Use `bootstrap()` when you want the existing one-shot startup behavior:
 
