@@ -1,6 +1,6 @@
 {
   "name": "@trebired/bootstrap",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Generic application lifecycle orchestrator with ordered bootstrap discovery, readiness control, graceful degradation, and shutdown.",
   "type": "module",
   "private": false,
@@ -30,12 +30,13 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun ./scripts/prepare-dist.mjs prepare-dist",
+    "build": "bun run prepare:generated && rm -rf dist && tsc -p tsconfig.build.json && bun ./scripts/prepare-dist.mjs prepare-dist",
     "demo": "bun run examples/dummy.ts",
     "postpack": "bun ./scripts/prepare-dist.mjs postpack",
     "prepack": "bun run build && bun ./scripts/prepare-dist.mjs prepack",
     "prepublishOnly": "bun run typecheck && bun run build && bun run verify:runtime && bun run verify:pack",
-    "typecheck": "tsc --noEmit",
+    "prepare:generated": "bun ./scripts/build/generated/tsconfig.mjs",
+    "typecheck": "bun run prepare:generated && tsc --noEmit",
     "verify:runtime": "bun ./scripts/verify/runtime.mjs",
     "verify:pack": "bun ./scripts/verify/pack.mjs"
   },
