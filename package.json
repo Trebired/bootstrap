@@ -1,6 +1,6 @@
 {
   "name": "@trebired/bootstrap",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Generic application lifecycle orchestrator with ordered bootstrap discovery, readiness control, graceful degradation, and shutdown.",
   "type": "module",
   "private": false,
