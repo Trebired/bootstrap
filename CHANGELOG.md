@@ -4,6 +4,13 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.2.2
+
+- Fixed a broken published-package build: a fresh checkout has no committed `.code-discipline/generated/` output, and nothing regenerated it before `typecheck`/`build`, so every internal `#hash` import failed to resolve. `typecheck` and `build` now run `prepare:generated` first.
+- Standardized package metadata (author field, config-driven organization name, dropped the Node engine constraint) and migrated `.code-discipline/config.ts` to `defineCodeDisciplineConfig`.
+- Normalized README structure and removed the license footer.
+- Updated the `@trebired/code-discipline` devDependency to 4.8.0.
+
 ## 1.2.0
 
 - Added `createBootstrapLifecycleLogger()` for converting structured lifecycle events into logger output with generic normalized metadata and configurable groups/levels.
