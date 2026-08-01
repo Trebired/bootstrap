@@ -32,6 +32,7 @@
   "#gxv0fwleavl3": "./src/suffixes.ts",
   "#kq9yax6ngsap": "./src/core/runtime/steps.ts",
   "#my58qsd8qazx": "./src/module/handler.ts",
+  "#neecgva915zj": "./scripts/build/generated/tsconfig.mjs",
   "#p4w1s2z41nxy": "./src/module/import.ts",
   "#t0phxm6bq4o4": "./src/backend/utils/object.ts",
   "#tq3pg9l225et": "./src/core/runtime/logger.ts",
