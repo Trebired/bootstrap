@@ -4,6 +4,11 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.2.4
+
+- Moved Code Discipline config, alias-map state, generated tsconfig paths, and reports to `.trebired/code-discipline/`.
+- Updated the `@trebired/code-discipline` devDependency to `^4.10.0`.
+
 ## 1.2.3
 
 - Updated Code Discipline configuration to the `imports` rule with dead import removal enabled.

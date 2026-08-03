@@ -1,6 +1,6 @@
 {
   "name": "@trebired/bootstrap",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Generic application lifecycle orchestrator with ordered bootstrap discovery, readiness control, graceful degradation, and shutdown.",
   "type": "module",
   "private": false,
@@ -45,7 +45,7 @@
     "@package/result": "npm:@trebired/result@^1.1.4"
   },
   "devDependencies": {
-    "@trebired/code-discipline": "^4.9.2",
+    "@trebired/code-discipline": "^4.10.0",
     "@types/bun": "^1.3.4",
     "@types/node": "^24.10.1",
     "typescript": "^6.0.2"
