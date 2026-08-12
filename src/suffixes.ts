@@ -14,9 +14,9 @@ function normalizeSuffixRules(rules?: SuffixRules): Required<SuffixRules> {
 
 function isAttachExtension(ext: string): boolean {
   return ext === ".js"
-    || ext === ".mjs"
-    || ext === ".ts"
-    || ext === ".mts";
+  ||ext === ".mjs"
+  ||ext === ".ts"
+  ||ext === ".mts";
 }
 
 function suffixOfName(fileName: string, rules?: SuffixRules): string {

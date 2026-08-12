@@ -8,15 +8,16 @@ import { formatError } from "#7vfj5fhk8sp9";
 import { isDir, relFromRoot } from "#borism6zb02o";
 import { cleanStringList, isRecord, toString } from "#7iidjfwwxm9c";
 import { walkBootstrapFiles } from "#5m1qr8zj0sdu";
+import { matchesRule, normalizeMatchValue } from "#gfbbrr5jgv5e";
 
 const RESERVED_OPTION_KEYS = new Set([
-  "dir",
-  "lifecycle",
-  "logger",
-  "loggerAdapter",
-  "scan",
-  "subsystems",
-  "verbose",
+    "dir",
+    "lifecycle",
+    "logger",
+    "loggerAdapter",
+    "scan",
+    "subsystems",
+    "verbose",
 ]);
 
 type NormalizedScanConfig = {
@@ -44,28 +45,11 @@ type DiscoverBootstrapFilesResult = {
   };
 };
 
-function normalizeMatchValue(value: string): string {
-  return String(value || "").trim().replace(/\\/g, "/").replace(/^\.\/+/, "");
-}
-
-function normalizeMatchSet(values: Iterable<unknown> | null | undefined): Set<string> {
+function normalizeMatchSet(values: Iterable<unknown>|null | undefined): Set<string> {
   return new Set(cleanStringList(values).map(normalizeMatchValue).filter(Boolean));
 }
 
-function matchesRule(args: {
-  name: string;
-  relativePath: string;
-  rules: Set<string>;
-}): boolean {
-  const { name, relativePath, rules } = args;
-  if (!rules.size) return false;
-
-  const normalizedName = normalizeMatchValue(name);
-  const normalizedRelativePath = normalizeMatchValue(relativePath);
-  return rules.has(normalizedName) || rules.has(normalizedRelativePath);
-}
-
-function normalizeExcludeSuffixes(values: Iterable<unknown> | null | undefined): string[] {
+function normalizeExcludeSuffixes(values: Iterable<unknown>|null | undefined): string[] {
   return cleanStringList(values).map((value) => value.toLowerCase());
 }
 
@@ -103,11 +87,11 @@ function resolveDependencies(options: BootstrapOptions): Record<string, unknown>
 }
 
 function resolveRoots(args: {
-  dir: string;
-  scan: NormalizedScanConfig;
-  suffixRules: Required<SuffixRules>;
-  verbose: boolean;
-  logger: NormalizedBootstrapLogger;
+    dir: string;
+    scan: NormalizedScanConfig;
+    suffixRules: Required<SuffixRules>;
+    verbose: boolean;
+    logger: NormalizedBootstrapLogger;
 }): string[] {
   const { dir, scan, suffixRules, verbose, logger } = args;
   const roots: string[] = [];
@@ -150,16 +134,16 @@ function resolveRoots(args: {
 }
 
 function discoverBootstrapFiles(args: {
-  dir: string;
-  scan: unknown;
-  verbose: boolean;
-  logger: NormalizedBootstrapLogger;
+    dir: string;
+    scan: unknown;
+    verbose: boolean;
+    logger: NormalizedBootstrapLogger;
 }): DiscoverBootstrapFilesResult {
   const { dir, logger, scan: scanInput, verbose } = args;
   const scan = normalizeScanConfig(scanInput);
   const suffixRules = normalizeSuffixRules({
-    excludeSuffixes: scan.excludeSuffixes,
-    lastSuffix: scan.lastSuffix,
+      excludeSuffixes: scan.excludeSuffixes,
+      lastSuffix: scan.lastSuffix,
   });
   const excludedSeen = new Set<string>();
   const roots = resolveRoots({ dir, scan, suffixRules, verbose, logger });
@@ -193,16 +177,16 @@ function collectBootstrapFiles(
 
   for (const root of roots) {
     const all = walkBootstrapFiles({
-      allowNodeModules: scan.allowNodeModules,
-      rootAbs: root,
-      dirsExclude: scan.dirsExclude,
-      dirAbs: dir,
-      excludedSeen,
-      filesExclude: scan.filesExclude,
-      filesInclude: scan.filesInclude,
-      suffixRules,
-      verbose,
-      logger,
+        allowNodeModules: scan.allowNodeModules,
+        rootAbs: root,
+        dirsExclude: scan.dirsExclude,
+        dirAbs: dir,
+        excludedSeen,
+        filesExclude: scan.filesExclude,
+        filesInclude: scan.filesInclude,
+        suffixRules,
+        verbose,
+        logger,
     });
     scanned += all.length;
     ordered.push(...selectAttachFiles(dir, all, scan.filesInclude, suffixRules));
@@ -228,9 +212,9 @@ function selectAttachFiles(
     if (filesInclude.size && !matchesRule({ name, relativePath, rules: filesInclude })) continue;
     if (!isAttachFile(name, suffixRules)) continue;
     ordered.push({
-      abs: fileAbs,
-      name,
-      relativePath: relFromRoot(fileAbs, dir),
+        abs: fileAbs,
+        name,
+        relativePath: relFromRoot(fileAbs, dir),
     });
   }
 

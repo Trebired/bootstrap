@@ -41,9 +41,9 @@ function createRuntimeContext(runtime: BootstrapRuntimeImpl, subsystem: Internal
     signal: runtime.runController.signal,
     own: (resource, options) => createRuntimeOwnedHandle(runtime, subsystem.id, resource, options),
     addCleanup: (cleanup, options) => createRuntimeOwnedHandle(runtime, subsystem.id, cleanup, {
-      name: options?.name,
-      timeoutMs: options?.timeoutMs,
-      forceCleanup: options?.forceCleanup ? () => options.forceCleanup!() : undefined,
+        name: options?.name,
+        timeoutMs: options?.timeoutMs,
+        forceCleanup: options?.forceCleanup ? () => options.forceCleanup!() : undefined,
     }),
     readiness: {
       enable: (reason?: string) => runtime.setReadiness(true, reason),
@@ -67,7 +67,7 @@ function makeOwnedHandle(
 ): BootstrapOwnedResourceHandle {
   return {
     name: resource.name,
-    dispose: async () => {
+    dispose: async() => {
       if (!resource.active) {
         return;
       }

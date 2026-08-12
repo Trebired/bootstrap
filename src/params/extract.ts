@@ -13,16 +13,16 @@ function splitParams(raw: unknown): string[] {
   if (!source) return [];
 
   return source
-    .split(",")
-    .map((item) => String(item || "").trim())
-    .filter(Boolean)
-    .map((item) => String((item.split("=")[0] || "")).trim())
-    .map((item) => {
+  .split(",")
+  .map((item) => String(item || "").trim())
+  .filter(Boolean)
+  .map((item) => String((item.split("=")[0] || "")).trim())
+  .map((item) => {
       const token = String(item || "").trim().replace(/^\.\.\./, "").trim();
       const simple = token.match(/^([A-Za-z_$][A-Za-z0-9_$]*)\??(?:\s*:\s*[\s\S]+)?$/);
       return simple && simple[1] ? simple[1] : token;
-    })
-    .filter(Boolean);
+  })
+  .filter(Boolean);
 }
 
 function parseParamTokensFromFn(fn: unknown): string[] {
@@ -143,15 +143,15 @@ function extractParamsFromAttachExportCode(code: string): string[] | null {
 }
 
 function extractParamsOverrideFromFile(args: {
-  code: string | null;
-  exportShape: BootstrapExportShape;
-  runtimeFn: unknown;
+    code: string | null;
+    exportShape: BootstrapExportShape;
+    runtimeFn: unknown;
 }): string[] | null {
   const { code, exportShape, runtimeFn } = args;
   if (!code) return null;
   return exportShape === "function"
-    ? extractFunctionParamsOverride(code, runtimeFn)
-    : extractAttachParamsOverride(code, runtimeFn);
+  ? extractFunctionParamsOverride(code, runtimeFn)
+  : extractAttachParamsOverride(code, runtimeFn);
 }
 
 function extractFunctionParamsOverride(code: string, runtimeFn: unknown): string[] | null {

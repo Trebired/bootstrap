@@ -6,7 +6,7 @@ const DEFAULT_LAST_SUFFIX = "a";
 const IMPORT_REVISION_PARAM = "bootstrap_v";
 
 const VERBOSE_ENV_KEYS = Object.freeze([
-  "BOOTSTRAP_VERBOSE",
+    "BOOTSTRAP_VERBOSE",
 ]);
 
 export {

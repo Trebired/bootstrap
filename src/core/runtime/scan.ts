@@ -16,12 +16,12 @@ async function loadScannedSubsystems(runtime: BootstrapRuntimeImpl): Promise<voi
 
   ensureRuntimeDir(runtime, dir);
   const discovered = discoverBootstrapFiles({
-    dir,
-    scan: runtime.options.scan,
-    verbose: runtime.verbose,
-    logger: runtime.logger,
+      dir,
+      scan: runtime.options.scan,
+      verbose: runtime.verbose,
+      logger: runtime.logger,
   });
-  const fileCodeCache = new Map<string, string | null>();
+  const fileCodeCache = new Map<string, string|null>();
   const importRevision = nextImportRevision();
 
   runtime.lastSummary.scanned += discovered.summary.scanned;
@@ -43,7 +43,7 @@ function ensureRuntimeDir(runtime: BootstrapRuntimeImpl, dir: string): void {
 
 async function loadScannedFile(
   runtime: BootstrapRuntimeImpl,
-  fileCodeCache: Map<string, string | null>,
+  fileCodeCache: Map<string, string|null>,
   importRevision: number,
   file: {
     abs: string;
@@ -76,7 +76,7 @@ async function importScannedFile(
     relativePath: string;
   },
   importRevision: number,
-): Promise<unknown | null> {
+): Promise<unknown|null> {
   try {
     return await loadModuleFile(file.abs, importRevision);
   } catch (error) {
@@ -88,7 +88,7 @@ async function importScannedFile(
 
 async function loadLegacyScannedModule(
   runtime: BootstrapRuntimeImpl,
-  fileCodeCache: Map<string, string | null>,
+  fileCodeCache: Map<string, string|null>,
   imported: unknown,
   file: {
     abs: string;
@@ -108,9 +108,9 @@ async function loadLegacyScannedModule(
   }
 
   const paramsOverride = extractParamsOverrideFromFile({
-    code,
-    exportShape: handler.exportShape,
-    runtimeFn: handler.runtimeFn,
+      code,
+      exportShape: handler.exportShape,
+      runtimeFn: handler.runtimeFn,
   });
   runtime.dynamicSubsystems.push(createLegacyScannedSubsystem(runtime, file.relativePath, handler, paramsOverride, index));
 }
@@ -129,16 +129,16 @@ function createLegacyScannedSubsystem(
     name: relativePath,
     order: runtime.scanGeneration + index,
     dependsOn: [],
-    source: "scanned-legacy" as const,
-    bootstrapHook: async () => {
+    source: "scanned-legacy"as const,
+    bootstrapHook: async() => {
       const invocation = await invokeModuleHandler({
-        handler,
-        dependencies: runtime.dependencies,
-        tag: relativePath,
-        paramsOverride,
-        paramsSource,
-        verbose: runtime.verbose,
-        logger: runtime.logger,
+          handler,
+          dependencies: runtime.dependencies,
+          tag: relativePath,
+          paramsOverride,
+          paramsSource,
+          verbose: runtime.verbose,
+          logger: runtime.logger,
       });
 
       if (!invocation.ok) {

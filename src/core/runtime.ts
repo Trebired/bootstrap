@@ -58,9 +58,9 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
     readiness: false,
     availability: false,
   };
-  bootPromise: Promise<BootstrapRunReport> | null = null;
-  shutdownPromise: Promise<BootstrapShutdownReport> | null = null;
-  degradePromise: Promise<BootstrapDegradeReport> | null = null;
+  bootPromise: Promise<BootstrapRunReport>|null = null;
+  shutdownPromise: Promise<BootstrapShutdownReport>|null = null;
+  degradePromise: Promise<BootstrapDegradeReport>|null = null;
   shutdownRequested: BootstrapShutdownOptions | null = null;
   scanGeneration = 0;
   dynamicSubsystems: InternalSubsystem[] = [];
@@ -87,18 +87,18 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
     this.lifecycleOptions = options.lifecycle || {};
 
     logPackageInitialized({
-      adapter: options.loggerAdapter,
-      fallback: "console",
-      group: BOOTSTRAP_LOG_GROUP,
-      logger: options.logger,
-      source: BOOTSTRAP_PACKAGE_NAME,
+        adapter: options.loggerAdapter,
+        fallback: "console",
+        group: BOOTSTRAP_LOG_GROUP,
+        logger: options.logger,
+        source: BOOTSTRAP_PACKAGE_NAME,
     });
 
     if (this.lifecycleOptions.onEvent) {
       this.listeners.add(this.lifecycleOptions.onEvent);
     }
 
-    for (const [index, definition] of (options.subsystems || []).entries()) {
+    for (const [index, definition] of(options.subsystems || []).entries()) {
       this.staticSubsystems.push(normalizeSubsystemDefinition(definition, index));
     }
   }
@@ -208,12 +208,12 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
     this.setAvailability(false, options.reason);
     this.setReadiness(false, options.reason);
     this.emit({
-      type: "shutdown:requested",
-      state: this.state.state === "idle" ? "idle" : "degrading",
-      timestamp: nowIso(),
-      reason: options.reason,
-      readiness: this.state.readiness,
-      availability: this.state.availability,
+        type: "shutdown:requested",
+        state: this.state.state === "idle" ? "idle" : "degrading",
+        timestamp: nowIso(),
+        reason: options.reason,
+        readiness: this.state.readiness,
+        availability: this.state.availability,
     });
 
     this.shutdownPromise = doRuntimeShutdown(this, options);
@@ -253,12 +253,12 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
       readiness: value,
     };
     this.emit({
-      type: value ? "readiness:enabled" : "readiness:disabled",
-      state: this.state.state,
-      timestamp: nowIso(),
-      reason,
-      readiness: this.state.readiness,
-      availability: this.state.availability,
+        type: value ? "readiness:enabled" : "readiness:disabled",
+        state: this.state.state,
+        timestamp: nowIso(),
+        reason,
+        readiness: this.state.readiness,
+        availability: this.state.availability,
     });
   }
 

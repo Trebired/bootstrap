@@ -1,23 +1,22 @@
 import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
-import { resolveLogger } from "#c5bjtgzvarhf";
 import type {
   BootstrapLifecycleEvent,
   BootstrapLifecycleListener,
   BootstrapLifecycleLoggerLevel,
   BootstrapLifecycleLoggerOptions,
-  NormalizedBootstrapLogger,
 } from "#63np0sf1s6f9";
+import { resolveOptionalBootstrapLogger } from "./resolve-optional-logger";
 
 const DEFAULT_WARNING_EVENTS = new Set([
-  "bootstrap:failure",
-  "hook:failure",
-  "shutdown:forced",
+    "bootstrap:failure",
+    "hook:failure",
+    "shutdown:forced",
 ]);
 
 function createBootstrapLifecycleLogger(
   options: BootstrapLifecycleLoggerOptions = {},
 ): BootstrapLifecycleListener {
-  const logger = resolveOptionalLogger(options);
+  const logger = resolveOptionalBootstrapLogger(options);
   const group = options.group || BOOTSTRAP_LOG_GROUP;
   const resolveLevel = options.level || resolveDefaultLifecycleLogLevel;
   const resolveMessage = options.message || ((event: BootstrapLifecycleEvent) => event.type);
@@ -50,12 +49,6 @@ function normalizeLifecycleEventMetadata(event: BootstrapLifecycleEvent): Record
 
 function addMetadata(metadata: Record<string, unknown>, key: string, value: unknown): void {
   if (value !== undefined) metadata[key] = value;
-}
-
-function resolveOptionalLogger(options: BootstrapLifecycleLoggerOptions): NormalizedBootstrapLogger | undefined {
-  return options.logger || options.loggerAdapter
-    ? resolveLogger(options.logger, options.loggerAdapter)
-    : undefined;
 }
 
 export {

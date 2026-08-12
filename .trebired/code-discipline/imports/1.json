@@ -11,6 +11,7 @@
   "#63np0sf1s6f9": "./src/types.ts",
   "#6dl7qf2opux1": "./examples/lifecycle.ts",
   "#6pk4xe2v9lab": "./src/core/runtime.ts",
+  "#7d2zjhqfq32s": "./src/types/shutdown-controller.ts",
   "#7iidjfwwxm9c": "./src/utils/values.ts",
   "#7l8fl6xuos5s": "./src/index.ts",
   "#7vfj5fhk8sp9": "./src/utils/errors.ts",
@@ -28,15 +29,18 @@
   "#c5bjtgzvarhf": "./src/logging.ts",
   "#cpvuscfrjz8r": "./src/frontend/js/utils/text.ts",
   "#dwevoxi8e7xr": "./src/core/runtime/scan.ts",
+  "#flh8b9fxaeja": "./src/core/runtime/resolve-optional-logger.ts",
+  "#gfbbrr5jgv5e": "./src/scan/match.ts",
   "#go3m4pwdqt48": "./src/constants.ts",
   "#gxv0fwleavl3": "./src/suffixes.ts",
   "#kq9yax6ngsap": "./src/core/runtime/steps.ts",
   "#my58qsd8qazx": "./src/module/handler.ts",
   "#neecgva915zj": "./scripts/build/generated/tsconfig.mjs",
+  "#o2vdgtarge7w": "./src/core/runtime/shutdown/controller.ts",
   "#p4w1s2z41nxy": "./src/module/import.ts",
   "#t0phxm6bq4o4": "./src/backend/utils/object.ts",
   "#tq3pg9l225et": "./src/core/runtime/logger.ts",
   "#ubr96cc9bt5d": "./scripts/prepare-dist.mjs",
   "#vl1kc579x5ul": "./src/utils/env.ts",
-  "#xnrvgvwvs11x": "./src/core/runtime/shutdown-controller.ts"
+  "#wdzno919if5j": "./src/core/runtime/shutdown/report.ts"
 }

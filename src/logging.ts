@@ -14,10 +14,10 @@ function resolveLogger(
   adapter?: BootstrapLoggerAdapter,
 ): NormalizedBootstrapLogger {
   return resolveSharedLogger({
-    adapter,
-    fallback: "console",
-    logger,
-    source: BOOTSTRAP_PACKAGE_NAME,
+      adapter,
+      fallback: "console",
+      logger,
+      source: BOOTSTRAP_PACKAGE_NAME,
   }) as NormalizedBootstrapLogger;
 }
 

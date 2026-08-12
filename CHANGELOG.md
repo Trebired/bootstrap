@@ -4,6 +4,21 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.2.8
+
+- Updated the Code Discipline devDependency and lockfile to public `@trebired/code-discipline@^5.5.2`.
+- Fixed the public package entrypoint so shutdown controller helpers are exported in the packed runtime.
+
+## 1.2.7
+
+- Adopted the shared Trebired Code Discipline preset so package configs only keep repo-specific policy.
+- Updated the Code Discipline devDependency and lockfile to public `@trebired/code-discipline@^5.5.1`.
+
+## 1.2.6
+
+- Updated the package Code Discipline config to the platform-aligned rule set, including formatting, redundant path segment cleanup, removable comment checks, structural blank lines, and dry checks.
+- Updated the Code Discipline devDependency and lockfile to the current public `@trebired/code-discipline@^5.3.0`.
+
 ## 1.2.5
 
 - Refreshed package dependency ranges and lockfile state with `bun update` after adopting the `.trebired/code-discipline` structure.

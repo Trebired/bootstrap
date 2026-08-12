@@ -19,11 +19,11 @@ function relFromRoot(value: string, root: string): string {
 
 function stripComments(source: unknown): string {
   return String(source || "")
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/(^|[^:\\])\/\/.*$/gm, "$1");
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/(^|[^:\\])\/\/.*$/gm, "$1");
 }
 
-function readFileCached(cache: Map<string, string | null>, fileAbs: string): string | null {
+function readFileCached(cache: Map<string, string|null>, fileAbs: string): string | null {
   const abs = path.resolve(fileAbs);
   if (cache.has(abs)) return cache.get(abs) ?? null;
 

@@ -25,24 +25,24 @@ function resetDemoProject(): void {
   fs.mkdirSync(dir, { recursive: true });
 
   writeModule("database/connect.1.ts", `
-export default function connect(config, state) {
-  state.events.push("database connected to " + config.databaseUrl);
-}
-`);
+    export default function connect(config, state) {
+    state.events.push("database connected to " + config.databaseUrl);
+    }
+  `);
 
   writeModule("database/migrate.2.ts", `
-export function attach(state) {
-  state.events.push("database migrations complete");
-}
-`);
+    export function attach(state) {
+    state.events.push("database migrations complete");
+    }
+  `);
 
   writeModule("http/routes.a.ts", `
-export default {
-  attach(dependencies) {
+    export default {
+    attach(dependencies) {
     dependencies.state.events.push("http routes attached for " + dependencies.config.serviceName);
-  },
-};
-`);
+    },
+    };
+  `);
 }
 
 function createConsoleLogger(): DemoLogger {
@@ -64,29 +64,29 @@ async function runDummySystem(): Promise<void> {
 
   const state = { events: [] as string[] };
   const summary = await bootstrap({
-    dir,
-    verbose: true,
-    logger: createConsoleLogger(),
-    scan: {
-      dirs: {
-        include: ["database", "http"],
+      dir,
+      verbose: true,
+      logger: createConsoleLogger(),
+      scan: {
+        dirs: {
+          include: ["database", "http"],
+        },
+        files: {
+          excludeSuffixes: ["spec", "test", "d"],
+          lastSuffix: "a",
+        },
       },
-      files: {
-        excludeSuffixes: ["spec", "test", "d"],
-        lastSuffix: "a",
+      config: {
+        databaseUrl: "postgres://demo.local/app",
+        serviceName: "dummy",
       },
-    },
-    config: {
-      databaseUrl: "postgres://demo.local/app",
-      serviceName: "dummy",
-    },
-    state,
+      state,
   });
 
   process.stdout.write(`${JSON.stringify({ rootDir, summary, events: state.events }, null, 2)}\n`);
 }
 
-runDummySystem().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack || error.message : String(error)}\n`);
-  process.exitCode = 1;
+runDummySystem().catch ((error) => {
+    process.stderr.write(`${error instanceof Error ? error.stack || error.message : String(error)}\n`);
+    process.exitCode = 1;
 });

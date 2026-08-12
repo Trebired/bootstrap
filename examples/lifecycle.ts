@@ -22,46 +22,46 @@ function makeServer(): FakeServer {
 
 async function main(): Promise<void> {
   const runtime = createBootstrap({
-    lifecycle: {
-      shutdownTimeoutMs: 5_000,
-      onEvent(event) {
-        console.info("lifecycle", event.type, event.state, event.subsystemId || "-");
-      },
-    },
-    subsystems: [
-      {
-        id: "config",
-        async bootstrap() {
-          console.info("config loaded");
+      lifecycle: {
+        shutdownTimeoutMs: 5_000,
+        onEvent(event) {
+          console.info("lifecycle", event.type, event.state, event.subsystemId || "-");
         },
       },
-      {
-        id: "http",
-        dependsOn: ["config"],
-        async bootstrap(context) {
-          const server = makeServer();
-          await server.listen();
+      subsystems: [
+        {
+          id: "config",
+          async bootstrap() {
+            console.info("config loaded");
+          },
+        },
+        {
+          id: "http",
+          dependsOn: ["config"],
+          async bootstrap(context) {
+            const server = makeServer();
+            await server.listen();
 
-          context.own(server, {
-            name: "http-server",
-            cleanup: async (value) => {
-              await (value as FakeServer).close();
-            },
-            forceCleanup: async (value) => {
-              await (value as FakeServer).destroy();
-            },
-          });
+            context.own(server, {
+                name: "http-server",
+                cleanup: async(value) => {
+                  await (value as FakeServer).close();
+                },
+                forceCleanup: async(value) => {
+                  await (value as FakeServer).destroy();
+                },
+            });
+          },
+          async degrade(context) {
+            context.readiness.disable("draining");
+            context.availability.disable("draining");
+            console.info("http draining");
+          },
+          async shutdown() {
+            console.info("http shutdown hook");
+          },
         },
-        async degrade(context) {
-          context.readiness.disable("draining");
-          context.availability.disable("draining");
-          console.info("http draining");
-        },
-        async shutdown() {
-          console.info("http shutdown hook");
-        },
-      },
-    ],
+      ],
   });
 
   await runtime.bootstrap();
@@ -69,7 +69,7 @@ async function main(): Promise<void> {
   await runtime.shutdown({ reason: "demo" });
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+main().catch ((error) => {
+    console.error(error);
+    process.exitCode = 1;
 });

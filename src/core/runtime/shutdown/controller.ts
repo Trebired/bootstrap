@@ -1,8 +1,5 @@
 import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
-import { resolveLogger } from "#c5bjtgzvarhf";
 import type {
-  BootstrapLogger,
-  BootstrapLoggerAdapter,
   BootstrapRuntime,
   BootstrapShutdownController,
   BootstrapShutdownControllerOptions,
@@ -12,6 +9,7 @@ import type {
   BootstrapSignalRegistrationCleanup,
   NormalizedBootstrapLogger,
 } from "#63np0sf1s6f9";
+import { resolveOptionalBootstrapLogger } from "#flh8b9fxaeja";
 
 const DEFAULT_SHUTDOWN_SIGNALS = [
   "SIGINT",
@@ -23,7 +21,7 @@ function createBootstrapShutdownController(
   runtime: BootstrapRuntime,
   options: BootstrapShutdownControllerOptions = {},
 ): BootstrapShutdownController {
-  let inFlight: Promise<BootstrapShutdownControllerResult> | null = null;
+  let inFlight: Promise<BootstrapShutdownControllerResult>|null = null;
   let completed: BootstrapShutdownControllerResult | null = null;
 
   const controller = {
@@ -32,10 +30,10 @@ function createBootstrapShutdownController(
       if (inFlight) return inFlight;
       if (completed) return Promise.resolve(completed);
       inFlight = requestBootstrapShutdown(runtime, options, requestOptions).then((result) => {
-        completed = result;
-        return result;
+          completed = result;
+          return result;
       }).finally(() => {
-        inFlight = null;
+          inFlight = null;
       });
       return inFlight;
     },
@@ -49,14 +47,14 @@ function bindBootstrapShutdownSignals(
   options: BootstrapShutdownSignalBindingOptions,
 ): () => void {
   const cleanups = (options.signals || DEFAULT_SHUTDOWN_SIGNALS).map((signal) => {
-    const cleanup = options.once(signal, () => {
-      void controller.request({
-        exitCode: options.exitCode,
-        reason: options.reason ? options.reason(signal) : `signal:${signal}`,
+      const cleanup = options.once(signal, () => {
+          void controller.request({
+              exitCode: options.exitCode,
+              reason: options.reason ? options.reason(signal) : `signal:${signal}`,
+          });
       });
-    });
-    return normalizeSignalCleanup(cleanup);
-  }).filter(Boolean) as Array<() => void>;
+      return normalizeSignalCleanup(cleanup);
+  }).filter(Boolean) as Array<()=>void>;
 
   return () => {
     cleanups.slice().reverse().forEach((cleanup) => cleanup());
@@ -68,7 +66,7 @@ async function requestBootstrapShutdown(
   options: BootstrapShutdownControllerOptions,
   requestOptions: BootstrapShutdownControllerRequestOptions,
 ): Promise<BootstrapShutdownControllerResult> {
-  const logger = resolveOptionalLogger(options);
+  const logger = resolveOptionalBootstrapLogger(options);
   const request = normalizeShutdownRequest(options, requestOptions);
   logShutdownRequested(logger, options.group, request);
 
@@ -120,8 +118,8 @@ async function shutdownRuntime(
 ): Promise<void> {
   try {
     result.shutdown = await runtime.shutdown({
-      reason: request.reason,
-      timeoutMs: request.timeoutMs,
+        reason: request.reason,
+        timeoutMs: request.timeoutMs,
     });
   } catch (error) {
     result.shutdownError = error;
@@ -135,9 +133,9 @@ function logShutdownRequested(
   request: ReturnType<typeof normalizeShutdownRequest>,
 ): void {
   logger?.info(group || BOOTSTRAP_LOG_GROUP, "shutdown:requested", {
-    exit_code: request.exitCode,
-    reason: request.reason,
-    timeout_ms: request.timeoutMs,
+      exit_code: request.exitCode,
+      reason: request.reason,
+      timeout_ms: request.timeoutMs,
   });
 }
 
@@ -149,10 +147,10 @@ function logShutdownFailure(
   error: unknown,
 ): void {
   logger?.warn(group || BOOTSTRAP_LOG_GROUP, message, {
-    exit_code: request.exitCode,
-    reason: request.reason,
-    timeout_ms: request.timeoutMs,
-    error,
+      exit_code: request.exitCode,
+      reason: request.reason,
+      timeout_ms: request.timeoutMs,
+      error,
   });
 }
 
@@ -161,15 +159,6 @@ function normalizeSignalCleanup(cleanup: BootstrapSignalRegistrationCleanup): ((
   if (!cleanup || typeof cleanup !== "object") return null;
   const method = ["unsubscribe", "dispose", "remove", "off"].find((key) => typeof cleanup[key] === "function");
   return method ? () => void cleanup[method]!() : null;
-}
-
-function resolveOptionalLogger(options: {
-  logger?: BootstrapLogger;
-  loggerAdapter?: BootstrapLoggerAdapter;
-}): NormalizedBootstrapLogger | undefined {
-  return options.logger || options.loggerAdapter
-    ? resolveLogger(options.logger, options.loggerAdapter)
-    : undefined;
 }
 
 export {

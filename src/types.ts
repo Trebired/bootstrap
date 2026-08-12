@@ -15,13 +15,13 @@ type NormalizedBootstrapLogger = NormalizedLoggerAdapter;
 type BootstrapLogEvent = LoggerAdapterEvent;
 
 type LifecycleState =
-  | "idle"
-  | "bootstrapping"
-  | "ready"
-  | "degrading"
-  | "shutting_down"
-  | "stopped"
-  | "failed";
+|"idle"
+|"bootstrapping"
+|"ready"
+|"degrading"
+|"shutting_down"
+|"stopped"
+|"failed";
 
 type BootstrapPhase = "bootstrap" | "degrade" | "shutdown" | "cleanup";
 
@@ -50,17 +50,17 @@ type BootstrapScanOptions = {
 
 type BootstrapLifecycleEvent = {
   type:
-    | "bootstrap:start"
-    | "bootstrap:finish"
-    | "bootstrap:failure"
-    | "readiness:enabled"
-    | "readiness:disabled"
-    | "shutdown:requested"
-    | "hook:start"
-    | "hook:finish"
-    | "hook:failure"
-    | "shutdown:forced"
-    | "shutdown:finish";
+  |"bootstrap:start"
+  |"bootstrap:finish"
+  |"bootstrap:failure"
+  |"readiness:enabled"
+  |"readiness:disabled"
+  |"shutdown:requested"
+  |"hook:start"
+  |"hook:finish"
+  |"hook:failure"
+  |"shutdown:forced"
+  |"shutdown:finish";
   timestamp: string;
   state: LifecycleState;
   phase?: BootstrapPhase;
@@ -98,17 +98,17 @@ type BootstrapLifecycleOptions = {
 };
 
 type BootstrapDisposable =
-  | (() => unknown)
-  | {
-    abort?: (...args: unknown[]) => unknown;
-    close?: (...args: unknown[]) => unknown;
-    destroy?: (...args: unknown[]) => unknown;
-    disconnect?: (...args: unknown[]) => unknown;
-    dispose?: (...args: unknown[]) => unknown;
-    kill?: (...args: unknown[]) => unknown;
-    stop?: (...args: unknown[]) => unknown;
-    terminate?: (...args: unknown[]) => unknown;
-  };
+|(() => unknown)
+| {
+  abort?: (...args: unknown[]) => unknown;
+  close?: (...args: unknown[]) => unknown;
+  destroy?: (...args: unknown[]) => unknown;
+  disconnect?: (...args: unknown[]) => unknown;
+  dispose?: (...args: unknown[]) => unknown;
+  kill?: (...args: unknown[]) => unknown;
+  stop?: (...args: unknown[]) => unknown;
+  terminate?: (...args: unknown[]) => unknown;
+};
 
 type BootstrapOwnedResourceOptions = {
   name?: string;
@@ -155,8 +155,8 @@ type BootstrapContext = {
   deps: Record<string, unknown>;
   signal: AbortSignal;
   own: (resource: BootstrapDisposable | unknown, options?: BootstrapOwnedResourceOptions) => BootstrapOwnedResourceHandle;
-  addCleanup: (cleanup: () => unknown | Promise<unknown>, options?: Omit<BootstrapOwnedResourceOptions, "cleanup" | "forceCleanup"> & {
-    forceCleanup?: () => unknown | Promise<unknown>;
+  addCleanup: (cleanup: () => unknown | Promise<unknown>, options?: Omit<BootstrapOwnedResourceOptions, "cleanup"|"forceCleanup">& {
+      forceCleanup?: () => unknown | Promise<unknown>;
   }) => BootstrapOwnedResourceHandle;
   readiness: BootstrapReadinessController;
   availability: BootstrapAvailabilityController;
@@ -185,7 +185,7 @@ type BootstrapOptions = {
   loggerAdapter?: BootstrapLoggerAdapter;
   lifecycle?: BootstrapLifecycleOptions;
   subsystems?: BootstrapSubsystemDefinition[];
-} & Record<string, unknown>;
+} &Record<string, unknown>;
 
 type BootstrapSummary = {
   scanned: number;
@@ -253,51 +253,6 @@ type BootstrapRuntime = {
   onEvent: (listener: BootstrapLifecycleListener) => () => void;
 };
 
-type BootstrapShutdownControllerOptions = {
-  defaultExitCode?: number;
-  group?: string;
-  logger?: BootstrapLogger;
-  loggerAdapter?: BootstrapLoggerAdapter;
-  terminate?: (exitCode: number) => unknown | Promise<unknown>;
-  timeoutMs?: number;
-};
-
-type BootstrapShutdownControllerRequestOptions = BootstrapShutdownOptions & {
-  exitCode?: number;
-};
-
-type BootstrapShutdownControllerResult = {
-  degradeError?: unknown;
-  degraded?: BootstrapDegradeReport;
-  exitCode: number;
-  reason?: string;
-  shutdown?: BootstrapShutdownReport;
-  shutdownError?: unknown;
-  terminated: boolean;
-};
-
-type BootstrapSignalRegistrationCleanup =
-  | void
-  | (() => unknown)
-  | {
-    dispose?: () => unknown;
-    off?: () => unknown;
-    remove?: () => unknown;
-    unsubscribe?: () => unknown;
-  };
-
-type BootstrapShutdownSignalBindingOptions = {
-  exitCode?: number;
-  once: (signal: string, handler: () => void) => BootstrapSignalRegistrationCleanup;
-  reason?: (signal: string) => string;
-  signals?: readonly string[];
-};
-
-type BootstrapShutdownController = {
-  bindSignals: (options: BootstrapShutdownSignalBindingOptions) => () => void;
-  request: (options?: BootstrapShutdownControllerRequestOptions) => Promise<BootstrapShutdownControllerResult>;
-};
-
 type BootstrapExportShape = "function" | "attach";
 
 type BootstrapHandler = {
@@ -354,16 +309,10 @@ export type {
   BootstrapRunReport,
   BootstrapRuntime,
   BootstrapScanOptions,
-  BootstrapShutdownController,
-  BootstrapShutdownControllerOptions,
-  BootstrapShutdownControllerRequestOptions,
-  BootstrapShutdownControllerResult,
   BootstrapShutdownContext,
   BootstrapShutdownOptions,
   BootstrapShutdownReport,
-  BootstrapShutdownSignalBindingOptions,
   BootstrapShutdownStepResult,
-  BootstrapSignalRegistrationCleanup,
   BootstrapSnapshot,
   BootstrapSubsystemDefinition,
   BootstrapSubsystemRef,
@@ -374,3 +323,11 @@ export type {
   ResolvedBootstrapArguments,
   SuffixRules,
 };
+export type {
+  BootstrapShutdownController,
+  BootstrapShutdownControllerOptions,
+  BootstrapShutdownControllerRequestOptions,
+  BootstrapShutdownControllerResult,
+  BootstrapShutdownSignalBindingOptions,
+  BootstrapSignalRegistrationCleanup,
+} from "./types/shutdown-controller";

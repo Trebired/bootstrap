@@ -31,8 +31,7 @@ const log = {
     else console.error(`[${group}] ${message}`, data);
   },
   fail(group, message, data) {
-    if (data === undefined) console.error(`[${group}] ${message}`);
-    else console.error(`[${group}] ${message}`, data);
+    this.error(group, message, data);
   },
 };
 
@@ -41,28 +40,28 @@ const serverState = {
 };
 
 await bootstrap({
-  dir,
-  config: {
-    port: 3000,
-    appName: "example-server",
-  },
-  app,
-  http,
-  log,
-  scan: {
-    dirs: {
-      include: ["http"],
+    dir,
+    config: {
+      port: 3000,
+      appName: "example-server",
     },
-    files: {
-      excludeSuffixes: ["spec", "test", "d"],
-      lastSuffix: "a",
+    app,
+    http,
+    log,
+    scan: {
+      dirs: {
+        include: ["http"],
+      },
+      files: {
+        excludeSuffixes: ["spec", "test", "d"],
+        lastSuffix: "a",
+      },
     },
-  },
-  logger: log,
-  serverState,
+    logger: log,
+    serverState,
 });
 
 log.info("example.server", "bootstrap complete", {
-  routes: app.routes.map((route) => `${route.method} ${route.route}`),
-  listening: Boolean(serverState.server),
+    routes: app.routes.map((route) => `${route.method} ${route.route}`),
+    listening: Boolean(serverState.server),
 });

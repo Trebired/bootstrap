@@ -20,17 +20,17 @@ async function verifyLifecycleLogger() {
   const logger = (event) => logs.push(event);
   const lifecycle = createBootstrapLifecycleLogger({ group: "verify.lifecycle", logger });
   lifecycle({
-    availability: false,
-    durationMs: 12,
-    error: new Error("failed"),
-    phase: "shutdown",
-    readiness: false,
-    state: "shutting_down",
-    subsystemId: "service",
-    target: "resource",
-    timestamp: new Date().toISOString(),
-    timeoutMs: 100,
-    type: "hook:failure",
+      availability: false,
+      durationMs: 12,
+      error: new Error("failed"),
+      phase: "shutdown",
+      readiness: false,
+      state: "shutting_down",
+      subsystemId: "service",
+      target: "resource",
+      timestamp: new Date().toISOString(),
+      timeoutMs: 100,
+      type: "hook:failure",
   });
 
   assert.equal(logs[0].group, "verify.lifecycle");
@@ -41,9 +41,9 @@ async function verifyLifecycleLogger() {
   assert.equal(logs[0].metadata.timeout_ms, 100);
 
   createBootstrapLifecycleLogger({ level: () => "error", logger })({
-    state: "stopped",
-    timestamp: new Date().toISOString(),
-    type: "shutdown:finish",
+      state: "stopped",
+      timestamp: new Date().toISOString(),
+      type: "shutdown:finish",
   });
   assert.equal(logs[1].level, "error");
 }
@@ -54,27 +54,27 @@ async function verifyShutdownController() {
   let shutdownCalls = 0;
   const terminateCalls = [];
   const runtime = createBootstrap({
-    logger: () => {},
-    subsystems: [
-      {
-        id: "service",
-        bootstrap() {},
-        degrade() {
-          degradeCalls += 1;
+      logger: () => {},
+      subsystems: [
+        {
+          id: "service",
+          bootstrap() {},
+          degrade() {
+            degradeCalls += 1;
+          },
+          shutdown() {
+            shutdownCalls += 1;
+          },
         },
-        shutdown() {
-          shutdownCalls += 1;
-        },
-      },
-    ],
+      ],
   });
 
   await runtime.bootstrap();
   const controller = createBootstrapShutdownController(runtime, {
-    group: "verify.shutdown",
-    logger: (event) => logs.push(event),
-    terminate: (exitCode) => terminateCalls.push(exitCode),
-    timeoutMs: 200,
+      group: "verify.shutdown",
+      logger: (event) => logs.push(event),
+      terminate: (exitCode) => terminateCalls.push(exitCode),
+      timeoutMs: 200,
   });
   const first = controller.request({ exitCode: 3, reason: "manual" });
   const second = controller.request({ exitCode: 4, reason: "ignored" });
@@ -98,14 +98,14 @@ async function verifyShutdownControllerFailureLogging() {
   const degradeError = new Error("degrade failed");
   const shutdownError = new Error("shutdown failed");
   const controller = createBootstrapShutdownController({
-    async degrade() {
-      throw degradeError;
-    },
-    async shutdown() {
-      throw shutdownError;
-    },
-  }, {
-    logger: (event) => logs.push(event),
+      async degrade() {
+        throw degradeError;
+      },
+      async shutdown() {
+        throw shutdownError;
+      },
+    }, {
+      logger: (event) => logs.push(event),
   });
   const result = await controller.request({ reason: "failure" });
 
@@ -120,18 +120,18 @@ async function verifySignalBinding() {
   const handlers = {};
   const cleanups = [];
   const cleanup = bindBootstrapShutdownSignals({
-    request: (options) => {
-      calls.push(options);
-      return Promise.resolve({ exitCode: options.exitCode, terminated: false });
-    },
-  }, {
-    exitCode: 2,
-    once(signal, handler) {
-      handlers[signal] = handler;
-      return () => cleanups.push(signal);
-    },
-    reason: (signal) => `signal:${signal}`,
-    signals: ["ONE", "TWO"],
+      request: (options) => {
+        calls.push(options);
+        return Promise.resolve({ exitCode: options.exitCode, terminated: false });
+      },
+    }, {
+      exitCode: 2,
+      once(signal, handler) {
+        handlers[signal] = handler;
+        return () => cleanups.push(signal);
+      },
+      reason: (signal) => `signal:${signal}`,
+      signals: ["ONE", "TWO"],
   });
 
   handlers.ONE();
@@ -143,23 +143,20 @@ async function verifySignalBinding() {
 }
 
 async function verifyDisposableCleanup() {
-  await verifySyncCleanup();
-  await verifyPromiseCleanup();
+  await verifyCloseCleanup((markClosed) => () => markClosed());
+  await verifyCloseCleanup((markClosed) => async() => markClosed());
   await verifyCallbackCleanupSuccess();
   await verifyCallbackCleanupError();
   await verifyCallbackCleanupForce();
 }
 
-async function verifySyncCleanup() {
+async function verifyCloseCleanup(createClose) {
   let closed = false;
-  const report = await shutdownResource({ close: () => { closed = true; } });
-  assert.equal(closed, true);
-  assert.equal(report.completed.length, 1);
-}
-
-async function verifyPromiseCleanup() {
-  let closed = false;
-  const report = await shutdownResource({ close: async () => { closed = true; } });
+  const report = await shutdownResource({
+      close: createClose(() => {
+          closed = true;
+      }),
+  });
   assert.equal(closed, true);
   assert.equal(report.completed.length, 1);
 }
@@ -168,14 +165,14 @@ async function verifyCallbackCleanupSuccess() {
   let closeCallback;
   let completed = false;
   const runtime = createResourceRuntime({
-    close(callback) {
-      closeCallback = callback;
-    },
+      close(callback) {
+        closeCallback = callback;
+      },
   });
   await runtime.bootstrap();
   const shutdown = runtime.shutdown({ timeoutMs: 500 }).then((report) => {
-    completed = true;
-    return report;
+      completed = true;
+      return report;
   });
 
   await waitFor(() => typeof closeCallback === "function");
@@ -189,9 +186,9 @@ async function verifyCallbackCleanupSuccess() {
 async function verifyCallbackCleanupError() {
   const cleanupError = new Error("close failed");
   const report = await shutdownResource({
-    close(callback) {
-      callback(cleanupError);
-    },
+      close(callback) {
+        callback(cleanupError);
+      },
   });
   assert.equal(report.failed.length, 1);
   assert.equal(report.steps[0].error, cleanupError);
@@ -200,11 +197,11 @@ async function verifyCallbackCleanupError() {
 async function verifyCallbackCleanupForce() {
   let forced = false;
   const report = await shutdownResource({
-    close(_callback) {},
-    destroy() {
-      forced = true;
-    },
-  }, { timeoutMs: 5 });
+      close(_callback) {},
+      destroy() {
+        forced = true;
+      },
+    }, { timeoutMs: 5 });
   assert.equal(forced, true);
   assert.equal(report.forced.length, 1);
 }
@@ -217,15 +214,15 @@ async function shutdownResource(resource, options = {}) {
 
 function createResourceRuntime(resource) {
   return createBootstrap({
-    logger: () => {},
-    subsystems: [
-      {
-        id: "resource",
-        bootstrap(context) {
-          context.own(resource, { name: "resource" });
+      logger: () => {},
+      subsystems: [
+        {
+          id: "resource",
+          bootstrap(context) {
+            context.own(resource, { name: "resource" });
+          },
         },
-      },
-    ],
+      ],
   });
 }
 

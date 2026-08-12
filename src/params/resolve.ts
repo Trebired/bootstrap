@@ -19,8 +19,8 @@ function resolveArgsForFunction(
 ): ResolvedBootstrapArguments {
   const dependencyIndex = buildDependencyIndex(dependencies);
   const tokens = Array.isArray(paramsOverride) && paramsOverride.length
-    ? paramsOverride
-    : parseParamTokensFromFn(fn);
+  ? paramsOverride
+  : parseParamTokensFromFn(fn);
 
   if (!tokens.length) {
     if (typeof fn === "function" && fn.length === 0) return { ok: true, args: [], meta: [], used: [] };
@@ -50,8 +50,8 @@ function resolveParamBinding(
   dependencies: Record<string, unknown>,
   dependencyIndex: Map<string, string>,
 ):
-  | { ok: true; meta: ParamBinding; value: unknown }
-  | { missing: string; ok: false } {
+| { ok: true; meta: ParamBinding; value: unknown }
+| { missing: string; ok: false } {
   const param = String(token || "").trim();
   if (!isIdentifierToken(param)) {
     return { ok: false, missing: `<unsupported-param:${param}>` };

@@ -17,32 +17,32 @@ async function runRuntimeStep(runtime: BootstrapRuntimeImpl, options: InternalSt
 
 async function runStepBody(options: InternalStepOptions): Promise<void> {
   const timeoutMs = options.timeoutMs != null && Number.isFinite(options.timeoutMs)
-    ? Math.max(0, options.timeoutMs)
-    : null;
+  ? Math.max(0, options.timeoutMs)
+  : null;
 
   if (timeoutMs == null) {
     await options.run();
     return;
   }
 
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  let timer: ReturnType<typeof setTimeout>|null = null;
   await Promise.race([
-    options.run(),
-    new Promise((_, reject) => {
-      timer = setTimeout(() => {
-        reject(new Error("bootstrap-shutdown-timeout"));
-      }, timeoutMs);
-    }),
+      options.run(),
+      new Promise((_, reject) => {
+          timer = setTimeout(() => {
+              reject(new Error("bootstrap-shutdown-timeout"));
+            }, timeoutMs);
+      }),
   ]).finally(() => {
-    if (timer) {
-      clearTimeout(timer);
-    }
+      if (timer) {
+        clearTimeout(timer);
+      }
   });
 }
 
 function createHookStartEvent(runtime: BootstrapRuntimeImpl, options: InternalStepOptions) {
   return {
-    type: "hook:start" as const,
+    type: "hook:start"as const,
     state: runtime.state.state,
     timestamp: nowIso(),
     phase: options.phase,
@@ -60,14 +60,14 @@ function createCompletedStep(
 ): BootstrapShutdownStepResult {
   const durationMs = Date.now() - startedAt;
   runtime.emit({
-    type: "hook:finish",
-    state: runtime.state.state,
-    timestamp: nowIso(),
-    phase: options.phase,
-    subsystemId: options.subsystemId,
-    target: options.target,
-    name: options.name,
-    durationMs,
+      type: "hook:finish",
+      state: runtime.state.state,
+      timestamp: nowIso(),
+      phase: options.phase,
+      subsystemId: options.subsystemId,
+      target: options.target,
+      name: options.name,
+      durationMs,
   });
 
   return {
@@ -111,15 +111,15 @@ function emitFailure(
   error: unknown,
 ): BootstrapShutdownStepResult {
   runtime.emit({
-    type: "hook:failure",
-    state: runtime.state.state,
-    timestamp: nowIso(),
-    phase: options.phase,
-    subsystemId: options.subsystemId,
-    target: options.target,
-    name: options.name,
-    durationMs,
-    error,
+      type: "hook:failure",
+      state: runtime.state.state,
+      timestamp: nowIso(),
+      phase: options.phase,
+      subsystemId: options.subsystemId,
+      target: options.target,
+      name: options.name,
+      durationMs,
+      error,
   });
 
   return {

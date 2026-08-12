@@ -18,19 +18,19 @@ async function bootstrap(options: BootstrapOptions): Promise<BootstrapSummary> {
   const dependencies = resolveDependencies(cfg);
   const dir = resolveBootstrapDir(cfg, logger);
   const discovered = discoverBootstrapFiles({ dir, scan: cfg.scan, verbose, logger });
-  const fileCodeCache = new Map<string, string | null>();
+  const fileCodeCache = new Map<string, string|null>();
   const importRevision = nextImportRevision();
   const summary = createBootstrapSummary(discovered.summary.scanned);
 
   for (const file of discovered.ordered) {
     await bootstrapDiscoveredFile({
-      file,
-      fileCodeCache,
-      importRevision,
-      verbose,
-      logger,
-      dependencies,
-      summary,
+        file,
+        fileCodeCache,
+        importRevision,
+        verbose,
+        logger,
+        dependencies,
+        summary,
     });
   }
 
@@ -48,11 +48,11 @@ function normalizeBootstrapOptions(options: BootstrapOptions): BootstrapOptions 
 
 function createBootstrapLogger(options: BootstrapOptions) {
   logPackageInitialized({
-    adapter: options.loggerAdapter,
-    fallback: "console",
-    group: BOOTSTRAP_LOG_GROUP,
-    logger: options.logger,
-    source: BOOTSTRAP_PACKAGE_NAME,
+      adapter: options.loggerAdapter,
+      fallback: "console",
+      group: BOOTSTRAP_LOG_GROUP,
+      logger: options.logger,
+      source: BOOTSTRAP_PACKAGE_NAME,
   });
   return resolveLogger(options.logger, options.loggerAdapter);
 }
@@ -82,16 +82,16 @@ function createBootstrapSummary(scanned: number): BootstrapSummary {
 }
 
 async function bootstrapDiscoveredFile(args: {
-  file: {
-    abs: string;
-    relativePath: string;
-  };
-  fileCodeCache: Map<string, string | null>;
-  importRevision: number;
-  verbose: boolean;
-  logger: ReturnType<typeof resolveLogger>;
-  dependencies: Record<string, unknown>;
-  summary: BootstrapSummary;
+    file: {
+      abs: string;
+      relativePath: string;
+    };
+    fileCodeCache: Map<string, string|null>;
+    importRevision: number;
+    verbose: boolean;
+    logger: ReturnType<typeof resolveLogger>;
+    dependencies: Record<string, unknown>;
+    summary: BootstrapSummary;
 }): Promise<void> {
   const imported = await importBootstrapFile(args);
   if (!imported) {
@@ -106,18 +106,18 @@ async function bootstrapDiscoveredFile(args: {
   }
 
   const paramsOverride = extractParamsOverrideFromFile({
-    code,
-    exportShape: handler.exportShape,
-    runtimeFn: handler.runtimeFn,
+      code,
+      exportShape: handler.exportShape,
+      runtimeFn: handler.runtimeFn,
   });
   const invocation = await invokeModuleHandler({
-    handler,
-    dependencies: args.dependencies,
-    tag: args.file.relativePath,
-    paramsOverride,
-    paramsSource: paramsOverride?.length ? "file" : "runtime",
-    verbose: args.verbose,
-    logger: args.logger,
+      handler,
+      dependencies: args.dependencies,
+      tag: args.file.relativePath,
+      paramsOverride,
+      paramsSource: paramsOverride?.length ? "file" : "runtime",
+      verbose: args.verbose,
+      logger: args.logger,
   });
 
   applyInvocationSummary(args.summary, invocation);
@@ -138,12 +138,12 @@ function applyInvocationSummary(summary: BootstrapSummary, invocation: { ok: boo
 }
 
 function markSkippedWithoutHandler(args: {
-  file: {
-    relativePath: string;
-  };
-  logger: ReturnType<typeof resolveLogger>;
-  summary: BootstrapSummary;
-  verbose: boolean;
+    file: {
+      relativePath: string;
+    };
+    logger: ReturnType<typeof resolveLogger>;
+    summary: BootstrapSummary;
+    verbose: boolean;
 }): void {
   if (args.verbose) {
     args.logger.info(BOOTSTRAP_LOG_GROUP, `skip (no-handler) :: ${args.file.relativePath}`);
@@ -153,15 +153,15 @@ function markSkippedWithoutHandler(args: {
 }
 
 async function importBootstrapFile(args: {
-  file: {
-    abs: string;
-    relativePath: string;
-  };
-  importRevision: number;
-  verbose: boolean;
-  logger: ReturnType<typeof resolveLogger>;
-  summary: BootstrapSummary;
-}): Promise<unknown | null> {
+    file: {
+      abs: string;
+      relativePath: string;
+    };
+    importRevision: number;
+    verbose: boolean;
+    logger: ReturnType<typeof resolveLogger>;
+    summary: BootstrapSummary;
+}): Promise<unknown|null> {
   if (args.verbose) {
     args.logger.info(BOOTSTRAP_LOG_GROUP, `load :: ${args.file.relativePath}`);
   }

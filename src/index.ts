@@ -5,7 +5,7 @@ export { createBootstrapLifecycleLogger } from "./core/runtime/logger.js";
 export {
   bindBootstrapShutdownSignals,
   createBootstrapShutdownController,
-} from "./core/runtime/shutdown-controller.js";
+} from "./core/runtime/shutdown/controller.js";
 export { default } from "./core/bootstrap.js";
 export {
   DEFAULT_LAST_SUFFIX,

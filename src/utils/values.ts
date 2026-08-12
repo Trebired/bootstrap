@@ -12,7 +12,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
-function cleanStringList(values: Iterable<unknown> | null | undefined): string[] {
+function cleanStringList(values: Iterable<unknown>|null | undefined): string[] {
   if (!values) return [];
 
   const out: string[] = [];

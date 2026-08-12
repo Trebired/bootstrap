@@ -6,52 +6,36 @@ import { isExcludedBySuffix, normalizeSuffixRules } from "#gxv0fwleavl3";
 import type { NormalizedBootstrapLogger, SuffixRules } from "#63np0sf1s6f9";
 import { formatError } from "#7vfj5fhk8sp9";
 import { relFromRoot } from "#borism6zb02o";
-
-function normalizeMatchValue(value: string): string {
-  return String(value || "").trim().replace(/\\/g, "/").replace(/^\.\/+/, "");
-}
-
-function matchesRule(args: {
-  name: string;
-  relativePath: string;
-  rules: Set<string>;
-}): boolean {
-  const { name, relativePath, rules } = args;
-  if (!rules.size) return false;
-
-  const normalizedName = normalizeMatchValue(name);
-  const normalizedRelativePath = normalizeMatchValue(relativePath);
-  return rules.has(normalizedName) || rules.has(normalizedRelativePath);
-}
+import { matchesRule, normalizeMatchValue } from "./match";
 
 function walkBootstrapFiles(args: {
-  allowNodeModules: boolean;
-  rootAbs: string;
-  dirsExclude: Set<string>;
-  dirAbs: string;
-  excludedSeen: Set<string>;
-  filesExclude: Set<string>;
-  filesInclude: Set<string>;
-  suffixRules: SuffixRules;
-  verbose: boolean;
-  logger: NormalizedBootstrapLogger;
+    allowNodeModules: boolean;
+    rootAbs: string;
+    dirsExclude: Set<string>;
+    dirAbs: string;
+    excludedSeen: Set<string>;
+    filesExclude: Set<string>;
+    filesInclude: Set<string>;
+    suffixRules: SuffixRules;
+    verbose: boolean;
+    logger: NormalizedBootstrapLogger;
 }): string[] {
   const { rootAbs, dirAbs, excludedSeen, verbose, logger } = args;
   const out: string[] = [];
   const normalizedSuffixRules = normalizeSuffixRules(args.suffixRules);
   const logExcluded = createExcludedLogger(dirAbs, excludedSeen, verbose, logger);
   const visitDir = (currentDir: string) => visitBootstrapDir({
-    allowNodeModules: args.allowNodeModules,
-    currentDir,
-    dirAbs,
-    dirsExclude: args.dirsExclude,
-    filesExclude: args.filesExclude,
-    filesInclude: args.filesInclude,
-    logExcluded,
-    logger,
-    normalizedSuffixRules,
-    out,
-  }, visitDir);
+      allowNodeModules: args.allowNodeModules,
+      currentDir,
+      dirAbs,
+      dirsExclude: args.dirsExclude,
+      filesExclude: args.filesExclude,
+      filesInclude: args.filesInclude,
+      logExcluded,
+      logger,
+      normalizedSuffixRules,
+      out,
+    }, visitDir);
 
   visitDir(rootAbs);
   return out;
@@ -97,25 +81,25 @@ function visitBootstrapDir(
 
   for (const entry of entries) {
     visitEntry({
-      ...args,
-      entry,
-      visitDir,
+        ...args,
+        entry,
+        visitDir,
     });
   }
 }
 
 function visitEntry(args: {
-  allowNodeModules: boolean;
-  currentDir: string;
-  dirAbs: string;
-  dirsExclude: Set<string>;
-  entry: fs.Dirent;
-  filesExclude: Set<string>;
-  filesInclude: Set<string>;
-  logExcluded: (kind: string, absPath: string, reason: string) => void;
-  normalizedSuffixRules: ReturnType<typeof normalizeSuffixRules>;
-  out: string[];
-  visitDir: (currentDir: string) => void;
+    allowNodeModules: boolean;
+    currentDir: string;
+    dirAbs: string;
+    dirsExclude: Set<string>;
+    entry: fs.Dirent;
+    filesExclude: Set<string>;
+    filesInclude: Set<string>;
+    logExcluded: (kind: string, absPath: string, reason: string) => void;
+    normalizedSuffixRules: ReturnType<typeof normalizeSuffixRules>;
+    out: string[];
+    visitDir: (currentDir: string) => void;
 }): void {
   const name = args.entry && args.entry.name ? String(args.entry.name) : "";
   if (!name) return;

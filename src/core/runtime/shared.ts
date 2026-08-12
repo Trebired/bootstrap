@@ -49,7 +49,7 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
-function isFunction(value: unknown): value is (...args: unknown[]) => unknown {
+function isFunction(value: unknown): value is(...args: unknown[]) => unknown {
   return typeof value === "function";
 }
 
@@ -63,7 +63,7 @@ function resolveObjectFunction(obj: unknown, key: string): ((...args: unknown[])
   }
 
   const value = (obj as Record<string, unknown>)[key];
-  return typeof value === "function" ? value as (...args: unknown[]) => unknown : null;
+  return typeof value === "function" ? value as(...args: unknown[]) => unknown : null;
 }
 
 function isDisposableObject(value: unknown): value is Exclude<BootstrapDisposable, Function> {
@@ -72,7 +72,7 @@ function isDisposableObject(value: unknown): value is Exclude<BootstrapDisposabl
   }
 
   return ["abort", "close", "destroy", "disconnect", "dispose", "kill", "stop", "terminate"]
-    .some((key) => hasOwnFunction(value, key));
+  .some((key) => hasOwnFunction(value, key));
 }
 
 function createCleanupFromDisposable(
@@ -110,8 +110,8 @@ function normalizeSubsystemDefinition(
     name: toString(definition.name).trim() || id,
     order: Number.isFinite(toNumber(definition.order)) ? Number(toNumber(definition.order)) : fallbackOrder,
     dependsOn: Array.isArray(definition.dependsOn)
-      ? definition.dependsOn.map((item) => String(item).trim()).filter(Boolean)
-      : [],
+    ? definition.dependsOn.map((item) => String(item).trim()).filter(Boolean)
+    : [],
     source: "registered",
     bootstrapHook: createHook(definition.bootstrap),
     shutdownHook: createHook(definition.shutdown),
@@ -134,8 +134,8 @@ function resolveLifecycleSubsystemExport(mod: unknown, fallbackId: string, fallb
       name: toString(candidateRecord.name).trim() || id,
       order: Number.isFinite(toNumber(candidateRecord.order)) ? Number(toNumber(candidateRecord.order)) : fallbackOrder,
       dependsOn: Array.isArray(candidateRecord.dependsOn)
-        ? candidateRecord.dependsOn.map((item) => String(item).trim()).filter(Boolean)
-        : [],
+      ? candidateRecord.dependsOn.map((item) => String(item).trim()).filter(Boolean)
+      : [],
       source: "scanned-subsystem",
       ...hooks,
     };
@@ -147,8 +147,8 @@ function resolveLifecycleSubsystemExport(mod: unknown, fallbackId: string, fallb
 function orderSubsystems(subsystems: InternalSubsystem[]): InternalSubsystem[] {
   const graph = buildSubsystemGraph(subsystems);
   const queue = subsystems
-    .filter((subsystem) => (graph.indegree.get(subsystem.id) || 0) === 0)
-    .sort(compareSubsystems);
+  .filter((subsystem) => (graph.indegree.get(subsystem.id) || 0) === 0)
+  .sort(compareSubsystems);
   const ordered: InternalSubsystem[] = [];
 
   while (queue.length) {
@@ -170,14 +170,14 @@ function createExplicitCleanup(
   forceCleanup?: BootstrapOwnedResourceOptions["forceCleanup"],
 ) {
   return {
-    cleanup: async () => {
-      await invokeCleanupFunction(cleanup as (...args: unknown[]) => unknown, undefined, [resource]);
+    cleanup: async() => {
+      await invokeCleanupFunction(cleanup as(...args: unknown[]) => unknown, undefined, [resource]);
     },
     forceCleanup: forceCleanup
-      ? async () => {
-        await invokeCleanupFunction(forceCleanup as (...args: unknown[]) => unknown, undefined, [resource]);
-      }
-      : null,
+    ? async() => {
+      await invokeCleanupFunction(forceCleanup as(...args: unknown[]) => unknown, undefined, [resource]);
+    }
+    : null,
   };
 }
 
@@ -186,14 +186,14 @@ function createFunctionCleanup(
   forceCleanup?: BootstrapOwnedResourceOptions["forceCleanup"],
 ) {
   return {
-    cleanup: async () => {
+    cleanup: async() => {
       await invokeCleanupFunction(resource, undefined, []);
     },
     forceCleanup: forceCleanup
-      ? async () => {
-        await invokeCleanupFunction(forceCleanup as (...args: unknown[]) => unknown, undefined, [resource]);
-      }
-      : null,
+    ? async() => {
+      await invokeCleanupFunction(forceCleanup as(...args: unknown[]) => unknown, undefined, [resource]);
+    }
+    : null,
   };
 }
 
@@ -206,13 +206,13 @@ function createObjectCleanup(
   }
 
   const method = ["dispose", "close", "stop", "terminate", "disconnect", "destroy", "abort", "kill"]
-    .find((key) => hasOwnFunction(resource, key));
+  .find((key) => hasOwnFunction(resource, key));
   if (!method) {
     return null;
   }
 
   return {
-    cleanup: async () => {
+    cleanup: async() => {
       await invokeCleanupFunction(resolveObjectFunction(resource, method)!, resource, []);
     },
     forceCleanup: resolveForceCleanup(resource, method, forceCleanup),
@@ -225,26 +225,26 @@ function resolveForceCleanup(
   forceCleanup?: BootstrapOwnedResourceOptions["forceCleanup"],
 ): (() => Promise<void>) | null {
   if (forceCleanup) {
-    return async () => {
-      await invokeCleanupFunction(forceCleanup as (...args: unknown[]) => unknown, undefined, [resource]);
+    return async() => {
+      await invokeCleanupFunction(forceCleanup as(...args: unknown[]) => unknown, undefined, [resource]);
     };
   }
 
   const forceMethod = ["destroy", "abort", "kill", "terminate"]
-    .find((key) => key !== cleanupMethod && hasOwnFunction(resource, key));
+  .find((key) => key !== cleanupMethod && hasOwnFunction(resource, key));
   if (!forceMethod) {
     return null;
   }
 
-  return async () => {
+  return async() => {
     await invokeCleanupFunction(resolveObjectFunction(resource, forceMethod)!, resource, []);
   };
 }
 
 function createHook(fn: unknown) {
   return isFunction(fn)
-    ? async (context: BootstrapContext) => await Promise.resolve(fn(context))
-    : null;
+  ? async(context: BootstrapContext) => await Promise.resolve(fn(context))
+  : null;
 }
 
 function resolveSubsystemCandidates(mod: unknown): unknown[] {
@@ -258,7 +258,7 @@ function resolveSubsystemCandidates(mod: unknown): unknown[] {
     candidates.push(mod);
   }
 
-  if (isRecord((mod as Record<string, unknown> | null)?.default)) {
+  if (isRecord((mod as Record<string, unknown>|null)?.default)) {
     candidates.push((mod as Record<string, unknown>).default);
   }
 
@@ -266,21 +266,21 @@ function resolveSubsystemCandidates(mod: unknown): unknown[] {
 }
 
 function resolveSubsystemHooks(candidate: unknown) {
-  const record = candidate as Record<string, (...args: unknown[]) => unknown>;
+  const record = candidate as Record<string, (...args:unknown[])=>unknown>;
   const bootstrapFn = hasOwnFunction(candidate, "bootstrap")
-    ? record.bootstrap
-    : hasOwnFunction(candidate, "attach")
-      ? record.attach
-      : null;
+  ? record.bootstrap
+  : hasOwnFunction(candidate, "attach")
+  ? record.attach
+  : null;
 
   return {
-    bootstrapHook: bootstrapFn ? async (context: BootstrapContext) => await Promise.resolve(bootstrapFn(context)) : null,
+    bootstrapHook: bootstrapFn ? async(context: BootstrapContext) => await Promise.resolve(bootstrapFn(context)) : null,
     shutdownHook: hasOwnFunction(candidate, "shutdown")
-      ? async (context: BootstrapContext) => await Promise.resolve(record.shutdown(context))
-      : null,
+    ? async(context: BootstrapContext) => await Promise.resolve(record.shutdown(context))
+    : null,
     degradeHook: hasOwnFunction(candidate, "degrade")
-      ? async (context: BootstrapContext) => await Promise.resolve(record.degrade(context))
-      : null,
+    ? async(context: BootstrapContext) => await Promise.resolve(record.degrade(context))
+    : null,
   };
 }
 
