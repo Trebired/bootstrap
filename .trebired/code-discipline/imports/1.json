@@ -6,6 +6,7 @@
   "#2g6zs1tw5mep": "./src/core/discovery.ts",
   "#2shschcpicb4": "./scripts/verify/runtime.mjs",
   "#3z0wn9c7qkaf": "./src/params/extract.ts",
+  "#47z05oji96j2": "./.trebired/logger/config.ts",
   "#488m3wc238o2": "./examples/server.js",
   "#5m1qr8zj0sdu": "./src/scan/walk.ts",
   "#63np0sf1s6f9": "./src/types.ts",

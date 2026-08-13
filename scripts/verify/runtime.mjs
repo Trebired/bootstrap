@@ -33,7 +33,7 @@ async function verifyLifecycleLogger() {
       type: "hook:failure",
   });
 
-  assert.equal(logs[0].group, "verify.lifecycle");
+  assert.equal(logs[0].group, "trebired.verify.lifecycle");
   assert.equal(logs[0].level, "warn");
   assert.equal(logs[0].message, "hook:failure");
   assert.equal(logs[0].metadata.subsystem_id, "service");
@@ -87,7 +87,7 @@ async function verifyShutdownController() {
   assert.deepEqual(terminateCalls, [3]);
   assert.equal(degradeCalls, 1);
   assert.equal(shutdownCalls, 1);
-  assert.equal(logs.find((event) => event.message === "shutdown:requested").group, "verify.shutdown");
+  assert.equal(logs.find((event) => event.message === "shutdown:requested").group, "trebired.verify.shutdown");
   assert.equal((await controller.request()).exitCode, 3);
 
   await verifyShutdownControllerFailureLogging();
