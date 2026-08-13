@@ -40,8 +40,8 @@
   "#o2vdgtarge7w": "./src/core/runtime/shutdown/controller.ts",
   "#p4w1s2z41nxy": "./src/module/import.ts",
   "#t0phxm6bq4o4": "./src/backend/utils/object.ts",
-  "#tq3pg9l225et": "./src/core/runtime/logger.ts",
   "#ubr96cc9bt5d": "./scripts/prepare-dist.mjs",
+  "#vj81fygeflfz": "./src/core/runtime/lifecycle_logging.ts",
   "#vl1kc579x5ul": "./src/utils/env.ts",
   "#wdzno919if5j": "./src/core/runtime/shutdown/report.ts"
 }

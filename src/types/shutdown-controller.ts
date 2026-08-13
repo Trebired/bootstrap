@@ -6,7 +6,6 @@ import type {
 
 type BootstrapShutdownControllerOptions = {
   defaultExitCode?: number;
-  group?: string;
   logger?: import("#63np0sf1s6f9").BootstrapLogger;
   loggerAdapter?: import("#63np0sf1s6f9").BootstrapLoggerAdapter;
   terminate?: (exitCode: number) => unknown | Promise<unknown>;

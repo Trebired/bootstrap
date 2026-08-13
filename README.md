@@ -223,23 +223,7 @@ The runtime emits structured events for:
 - forced shutdown
 - final stopped state
 
-Example:
-
-```ts
-import { createBootstrapLifecycleLogger } from "@trebired/bootstrap";
-
-const runtime = createBootstrap({
-  lifecycle: {
-    onEvent: createBootstrapLifecycleLogger({
-      logger,
-      group: "startup.lifecycle",
-    }),
-  },
-  subsystems: [...],
-});
-```
-
-The lifecycle logger writes structured metadata using generic keys such as `state`, `phase`, `subsystem_id`, `target`, `name`, `duration_ms`, `timeout_ms`, `reason`, `readiness`, `availability`, and `error`. By default, `bootstrap:failure`, `hook:failure`, and `shutdown:forced` are logged as warnings; other events are logged as info. Pass `level` when a project needs a different level policy.
+Bootstrap logs lifecycle events as package logs through the logger adapter. `lifecycle.onEvent` is only for app-specific observers.
 
 ### Shutdown Controller
 
@@ -250,7 +234,6 @@ import { createBootstrapShutdownController } from "@trebired/bootstrap";
 
 const shutdown = createBootstrapShutdownController(runtime, {
   logger,
-  group: "startup.lifecycle",
   timeoutMs: 8_000,
   defaultExitCode: 0,
   terminate(exitCode) {

@@ -4,6 +4,11 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 2.0.0
+
+- Removed `createBootstrapLifecycleLogger()` so bootstrap lifecycle events are logged by the bootstrap package itself instead of being renamed by consuming apps.
+- Removed the shutdown controller `group` override; shutdown controller diagnostics now use package-owned bootstrap log groups.
+
 ## 1.2.9
 
 - Adopted the external `@trebired/code-discipline-config` preset and updated Code Discipline tooling to `@trebired/code-discipline@^6.0.9`.

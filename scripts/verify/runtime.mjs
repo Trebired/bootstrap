@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import {
   bindBootstrapShutdownSignals,
   createBootstrap,
-  createBootstrapLifecycleLogger,
   createBootstrapShutdownController,
 } from "../../dist/index.js";
 
@@ -17,35 +16,26 @@ async function main() {
 
 async function verifyLifecycleLogger() {
   const logs = [];
-  const logger = (event) => logs.push(event);
-  const lifecycle = createBootstrapLifecycleLogger({ group: "verify.lifecycle", logger });
-  lifecycle({
-      availability: false,
-      durationMs: 12,
-      error: new Error("failed"),
-      phase: "shutdown",
-      readiness: false,
-      state: "shutting_down",
-      subsystemId: "service",
-      target: "resource",
-      timestamp: new Date().toISOString(),
-      timeoutMs: 100,
-      type: "hook:failure",
+  const runtime = createBootstrap({
+      logger: (event) => logs.push(event),
+      subsystems: [
+        {
+          id: "service",
+          bootstrap() {},
+        },
+      ],
   });
 
-  assert.equal(logs[0].group, "trebired.verify.lifecycle");
-  assert.equal(logs[0].level, "warn");
-  assert.equal(logs[0].message, "hook:failure");
-  assert.equal(logs[0].metadata.subsystem_id, "service");
-  assert.equal(logs[0].metadata.duration_ms, 12);
-  assert.equal(logs[0].metadata.timeout_ms, 100);
+  await runtime.bootstrap();
+  await runtime.degrade({ reason: "verify" });
 
-  createBootstrapLifecycleLogger({ level: () => "error", logger })({
-      state: "stopped",
-      timestamp: new Date().toISOString(),
-      type: "shutdown:finish",
-  });
-  assert.equal(logs[1].level, "error");
+  const start = logs.find((event) => event.message === "bootstrap:start");
+  const disabled = logs.find((event) => event.message === "readiness:disabled");
+  const finish = logs.find((event) => event.message === "bootstrap:finish");
+  assert.equal(start.group, "trebired.bootstrap.lifecycle");
+  assert.equal(disabled.group, "trebired.bootstrap.lifecycle");
+  assert.equal(finish.group, "trebired.bootstrap.lifecycle");
+  assert.equal(disabled.metadata.reason, "verify");
 }
 
 async function verifyShutdownController() {
@@ -71,7 +61,6 @@ async function verifyShutdownController() {
 
   await runtime.bootstrap();
   const controller = createBootstrapShutdownController(runtime, {
-      group: "verify.shutdown",
       logger: (event) => logs.push(event),
       terminate: (exitCode) => terminateCalls.push(exitCode),
       timeoutMs: 200,
@@ -87,7 +76,7 @@ async function verifyShutdownController() {
   assert.deepEqual(terminateCalls, [3]);
   assert.equal(degradeCalls, 1);
   assert.equal(shutdownCalls, 1);
-  assert.equal(logs.find((event) => event.message === "shutdown:requested").group, "trebired.verify.shutdown");
+  assert.equal(logs.find((event) => event.message === "shutdown:requested").group, "trebired.bootstrap.shutdown");
   assert.equal((await controller.request()).exitCode, 3);
 
   await verifyShutdownControllerFailureLogging();

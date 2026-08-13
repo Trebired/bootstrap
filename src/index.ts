@@ -1,7 +1,6 @@
 export { BOOTSTRAP_LOG_GROUP, BOOTSTRAP_PACKAGE_NAME, VERBOSE_ENV_KEYS } from "./constants.js";
 export { bootstrap } from "./core/bootstrap.js";
 export { createBootstrap } from "./core/runtime.js";
-export { createBootstrapLifecycleLogger } from "./core/runtime/logger.js";
 export {
   bindBootstrapShutdownSignals,
   createBootstrapShutdownController,
@@ -27,9 +26,6 @@ export type {
   BootstrapGenericLogMethod,
   BootstrapLifecycleEvent,
   BootstrapLifecycleListener,
-  BootstrapLifecycleLoggerLevel,
-  BootstrapLifecycleLoggerLevelResolver,
-  BootstrapLifecycleLoggerOptions,
   BootstrapLifecycleOptions,
   BootstrapLogEvent,
   BootstrapLogger,

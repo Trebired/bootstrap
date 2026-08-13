@@ -1,4 +1,3 @@
-import { BOOTSTRAP_LOG_GROUP } from "#go3m4pwdqt48";
 import type {
   BootstrapRuntime,
   BootstrapShutdownController,
@@ -16,6 +15,7 @@ const DEFAULT_SHUTDOWN_SIGNALS = [
   "SIGTERM",
   "SIGHUP",
 ] as const;
+const SHUTDOWN_LOG_GROUP = "shutdown";
 
 function createBootstrapShutdownController(
   runtime: BootstrapRuntime,
@@ -68,7 +68,7 @@ async function requestBootstrapShutdown(
 ): Promise<BootstrapShutdownControllerResult> {
   const logger = resolveOptionalBootstrapLogger(options);
   const request = normalizeShutdownRequest(options, requestOptions);
-  logShutdownRequested(logger, options.group, request);
+  logShutdownRequested(logger, request);
 
   const result: BootstrapShutdownControllerResult = {
     exitCode: request.exitCode,
@@ -76,8 +76,8 @@ async function requestBootstrapShutdown(
     terminated: false,
   };
 
-  await degradeRuntime(runtime, logger, options.group, request, result);
-  await shutdownRuntime(runtime, logger, options.group, request, result);
+  await degradeRuntime(runtime, logger, request, result);
+  await shutdownRuntime(runtime, logger, request, result);
   if (options.terminate) await Promise.resolve(options.terminate(request.exitCode));
   result.terminated = Boolean(options.terminate);
   return result;
@@ -97,7 +97,6 @@ function normalizeShutdownRequest(
 async function degradeRuntime(
   runtime: BootstrapRuntime,
   logger: NormalizedBootstrapLogger | undefined,
-  group: string | undefined,
   request: ReturnType<typeof normalizeShutdownRequest>,
   result: BootstrapShutdownControllerResult,
 ): Promise<void> {
@@ -105,14 +104,13 @@ async function degradeRuntime(
     result.degraded = await runtime.degrade({ reason: request.reason });
   } catch (error) {
     result.degradeError = error;
-    logShutdownFailure(logger, group, "shutdown:degrade-failure", request, error);
+    logShutdownFailure(logger, "shutdown:degrade-failure", request, error);
   }
 }
 
 async function shutdownRuntime(
   runtime: BootstrapRuntime,
   logger: NormalizedBootstrapLogger | undefined,
-  group: string | undefined,
   request: ReturnType<typeof normalizeShutdownRequest>,
   result: BootstrapShutdownControllerResult,
 ): Promise<void> {
@@ -123,16 +121,15 @@ async function shutdownRuntime(
     });
   } catch (error) {
     result.shutdownError = error;
-    logShutdownFailure(logger, group, "shutdown:failure", request, error);
+    logShutdownFailure(logger, "shutdown:failure", request, error);
   }
 }
 
 function logShutdownRequested(
   logger: NormalizedBootstrapLogger | undefined,
-  group: string | undefined,
   request: ReturnType<typeof normalizeShutdownRequest>,
 ): void {
-  logger?.info(group || BOOTSTRAP_LOG_GROUP, "shutdown:requested", {
+  logger?.info(SHUTDOWN_LOG_GROUP, "shutdown:requested", {
       exit_code: request.exitCode,
       reason: request.reason,
       timeout_ms: request.timeoutMs,
@@ -141,12 +138,11 @@ function logShutdownRequested(
 
 function logShutdownFailure(
   logger: NormalizedBootstrapLogger | undefined,
-  group: string | undefined,
   message: string,
   request: ReturnType<typeof normalizeShutdownRequest>,
   error: unknown,
 ): void {
-  logger?.warn(group || BOOTSTRAP_LOG_GROUP, message, {
+  logger?.warn(SHUTDOWN_LOG_GROUP, message, {
       exit_code: request.exitCode,
       reason: request.reason,
       timeout_ms: request.timeoutMs,

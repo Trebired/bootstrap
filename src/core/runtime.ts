@@ -33,6 +33,7 @@ import {
   doRuntimeDegrade,
   doRuntimeShutdown,
 } from "./runtime/lifecycle.js";
+import { logBootstrapLifecycleEvent } from "./runtime/lifecycle_logging.js";
 import {
   InternalOwnedResource,
   InternalStepOptions,
@@ -227,6 +228,8 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
   }
 
   emit(event: BootstrapLifecycleEvent): void {
+    logBootstrapLifecycleEvent(this.logger, event);
+
     for (const listener of this.listeners) {
       try {
         listener(event);

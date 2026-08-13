@@ -79,18 +79,6 @@ type BootstrapLifecycleEvent = {
 
 type BootstrapLifecycleListener = (event: BootstrapLifecycleEvent) => void;
 
-type BootstrapLifecycleLoggerLevel = "error" | "fail" | "info" | "warn";
-
-type BootstrapLifecycleLoggerLevelResolver = (event: BootstrapLifecycleEvent) => BootstrapLifecycleLoggerLevel;
-
-type BootstrapLifecycleLoggerOptions = {
-  group?: string;
-  level?: BootstrapLifecycleLoggerLevelResolver;
-  logger?: BootstrapLogger;
-  loggerAdapter?: BootstrapLoggerAdapter;
-  message?: (event: BootstrapLifecycleEvent) => string;
-};
-
 type BootstrapLifecycleOptions = {
   shutdownTimeoutMs?: number;
   allowRestart?: boolean;
@@ -293,9 +281,6 @@ export type {
   BootstrapHandler,
   BootstrapLifecycleEvent,
   BootstrapLifecycleListener,
-  BootstrapLifecycleLoggerLevel,
-  BootstrapLifecycleLoggerLevelResolver,
-  BootstrapLifecycleLoggerOptions,
   BootstrapLifecycleOptions,
   BootstrapLogEvent,
   BootstrapLogger,
