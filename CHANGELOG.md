@@ -4,6 +4,12 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 2.1.0
+
+- Updated the shared Trebired config dependency to `@trebired/configs@^0.1.2`.
+- Added public `.trebired/bootstrap/config.ts` support through `@trebired/bootstrap/config`.
+- Bootstrap scans and runtime creation now merge package config defaults first and explicit runtime options last.
+
 ## 2.0.0
 
 - Removed `createBootstrapLifecycleLogger()` so bootstrap lifecycle events are logged by the bootstrap package itself instead of being renamed by consuming apps.
@@ -11,7 +17,7 @@ This project follows semantic versioning once published.
 
 ## 1.2.9
 
-- Adopted the external `@trebired/code-discipline-config` preset and updated Code Discipline tooling to `@trebired/code-discipline@^6.0.9`.
+- Adopted the external `@trebired/configs` preset and updated Code Discipline tooling to `@trebired/code-discipline@^6.0.9`.
 
 ## 1.2.8
 

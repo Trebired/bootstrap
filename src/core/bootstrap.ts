@@ -9,10 +9,11 @@ import type { BootstrapOptions, BootstrapSummary } from "#63np0sf1s6f9";
 import { envVerbose } from "#vl1kc579x5ul";
 import { formatError } from "#7vfj5fhk8sp9";
 import { isDir, readFileCached } from "#borism6zb02o";
+import { loadCachedConfigSync, mergeConfigOptions } from "#siqprgkhyn5e";
 import { discoverBootstrapFiles, resolveDependencies, resolveDirOption } from "./discovery.js";
 
-async function bootstrap(options: BootstrapOptions): Promise<BootstrapSummary> {
-  const cfg = normalizeBootstrapOptions(options);
+async function bootstrap(options: BootstrapOptions = {}): Promise<BootstrapSummary> {
+  const cfg = mergeConfigOptions(loadCachedConfigSync(), normalizeBootstrapOptions(options));
   const logger = createBootstrapLogger(cfg);
   const verbose = typeof cfg.verbose === "boolean" ? cfg.verbose : envVerbose();
   const dependencies = resolveDependencies(cfg);

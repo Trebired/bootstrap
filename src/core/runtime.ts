@@ -4,6 +4,7 @@ import { BOOTSTRAP_LOG_GROUP, BOOTSTRAP_PACKAGE_NAME } from "#go3m4pwdqt48";
 import { resolveLogger } from "#c5bjtgzvarhf";
 import { envVerbose } from "#vl1kc579x5ul";
 import { formatError } from "#7vfj5fhk8sp9";
+import { loadCachedConfigSync, mergeConfigOptions } from "#siqprgkhyn5e";
 import type {
   BootstrapDegradeOptions,
   BootstrapDegradeReport,
@@ -81,17 +82,18 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
   degradeCompletedForRun = false;
 
   constructor(options: BootstrapOptions = {}) {
-    this.options = options;
-    this.logger = resolveLogger(options.logger, options.loggerAdapter);
-    this.verbose = typeof options.verbose === "boolean" ? options.verbose : envVerbose();
-    this.dependencies = resolveDependencies(options);
-    this.lifecycleOptions = options.lifecycle || {};
+    const resolvedOptions = mergeConfigOptions(loadCachedConfigSync(), options);
+    this.options = resolvedOptions;
+    this.logger = resolveLogger(resolvedOptions.logger, resolvedOptions.loggerAdapter);
+    this.verbose = typeof resolvedOptions.verbose === "boolean" ? resolvedOptions.verbose : envVerbose();
+    this.dependencies = resolveDependencies(resolvedOptions);
+    this.lifecycleOptions = resolvedOptions.lifecycle || {};
 
     logPackageInitialized({
-        adapter: options.loggerAdapter,
+        adapter: resolvedOptions.loggerAdapter,
         fallback: "console",
         group: BOOTSTRAP_LOG_GROUP,
-        logger: options.logger,
+        logger: resolvedOptions.logger,
         source: BOOTSTRAP_PACKAGE_NAME,
     });
 
@@ -99,7 +101,7 @@ class BootstrapRuntimeImpl implements BootstrapRuntime {
       this.listeners.add(this.lifecycleOptions.onEvent);
     }
 
-    for (const [index, definition] of(options.subsystems || []).entries()) {
+    for (const [index, definition] of(resolvedOptions.subsystems || []).entries()) {
       this.staticSubsystems.push(normalizeSubsystemDefinition(definition, index));
     }
   }

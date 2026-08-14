@@ -2,6 +2,17 @@ export { BOOTSTRAP_LOG_GROUP, BOOTSTRAP_PACKAGE_NAME, VERBOSE_ENV_KEYS } from ".
 export { bootstrap } from "./core/bootstrap.js";
 export { createBootstrap } from "./core/runtime.js";
 export {
+  BOOTSTRAP_PROJECT_CONFIG_PATH,
+  defineConfig,
+  findConfig,
+  findConfigSync,
+  loadCachedConfigSync,
+  loadConfig,
+  loadConfigSync,
+  mergeConfigOptions,
+  normalizeConfig,
+} from "./config/index.js";
+export {
   bindBootstrapShutdownSignals,
   createBootstrapShutdownController,
 } from "./core/runtime/shutdown/controller.js";
@@ -53,3 +64,10 @@ export type {
   LifecycleState,
   SuffixRules,
 } from "./types.js";
+export type {
+  BootstrapConfig,
+  BootstrapConfigurableOptions,
+  LoadBootstrapConfigOptions,
+  LoadedBootstrapConfig,
+  NormalizedBootstrapConfig,
+} from "./config/index.js";
