@@ -11,6 +11,7 @@ import { formatError } from "#7vfj5fhk8sp9";
 import { isDir, readFileCached } from "#borism6zb02o";
 import { loadCachedConfigSync, mergeConfigOptions } from "#siqprgkhyn5e";
 import { discoverBootstrapFiles, resolveDependencies, resolveDirOption } from "./discovery.js";
+import { timeBootstrapStep, timeBootstrapSyncStep } from "./runtime/timing.js";
 
 async function bootstrap(options: BootstrapOptions = {}): Promise<BootstrapSummary> {
   const cfg = mergeConfigOptions(loadCachedConfigSync(), normalizeBootstrapOptions(options));
@@ -18,22 +19,26 @@ async function bootstrap(options: BootstrapOptions = {}): Promise<BootstrapSumma
   const verbose = typeof cfg.verbose === "boolean" ? cfg.verbose : envVerbose();
   const dependencies = resolveDependencies(cfg);
   const dir = resolveBootstrapDir(cfg, logger);
-  const discovered = discoverBootstrapFiles({ dir, scan: cfg.scan, verbose, logger });
+  const discovered = timeBootstrapSyncStep(logger, "discovery scan", () => {
+      return discoverBootstrapFiles({ dir, scan: cfg.scan, verbose, logger });
+  });
   const fileCodeCache = new Map<string, string|null>();
   const importRevision = nextImportRevision();
   const summary = createBootstrapSummary(discovered.summary.scanned);
 
-  for (const file of discovered.ordered) {
-    await bootstrapDiscoveredFile({
-        file,
-        fileCodeCache,
-        importRevision,
-        verbose,
-        logger,
-        dependencies,
-        summary,
-    });
-  }
+  await timeBootstrapStep(logger, "legacy file bootstrap", async() => {
+      for (const file of discovered.ordered) {
+        await bootstrapDiscoveredFile({
+            file,
+            fileCodeCache,
+            importRevision,
+            verbose,
+            logger,
+            dependencies,
+            summary,
+        });
+      }
+    }, { file_count: discovered.ordered.length });
 
   logger.info(
     BOOTSTRAP_LOG_GROUP,

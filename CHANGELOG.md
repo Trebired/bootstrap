@@ -4,6 +4,13 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 2.2.0
+
+- Added runtime timing logs for discovery scan, scanned-file import/resolve, dynamic subsystem registration, subsystem ordering, and subsystem bootstrap execution.
+- Loaded and resolved scanned lifecycle modules concurrently, while preserving deterministic registration order and dependency-graph bootstrap order.
+- Added timing logs to the legacy one-shot bootstrap path.
+- Updated Code Discipline tooling to `@trebired/code-discipline@^6.1.0` and the shared config package to `@trebired/configs@^0.1.5`.
+
 ## 2.1.0
 
 - Updated the shared Trebired config dependency to `@trebired/configs@^0.1.2`.

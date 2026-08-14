@@ -6,7 +6,22 @@ import { formatError } from "#7vfj5fhk8sp9";
 import { isDir, readFileCached } from "#borism6zb02o";
 import { discoverBootstrapFiles, resolveDirOption } from "#2g6zs1tw5mep";
 import type { BootstrapRuntimeImpl } from "#6pk4xe2v9lab";
-import { resolveLifecycleSubsystemExport } from "./shared.js";
+import { resolveLifecycleSubsystemExport, type InternalSubsystem } from "./shared.js";
+import { timeBootstrapStep, timeBootstrapSyncStep } from "./timing.js";
+
+type ScannedFile = {
+  abs: string;
+  relativePath: string;
+};
+
+type LoadedScannedFile =
+| {
+  status: "failed" | "skipped";
+}
+| {
+  status: "subsystem";
+  subsystem: InternalSubsystem;
+};
 
 async function loadScannedSubsystems(runtime: BootstrapRuntimeImpl): Promise<void> {
   const dir = resolveDirOption(runtime.options);
@@ -15,19 +30,27 @@ async function loadScannedSubsystems(runtime: BootstrapRuntimeImpl): Promise<voi
   }
 
   ensureRuntimeDir(runtime, dir);
-  const discovered = discoverBootstrapFiles({
-      dir,
-      scan: runtime.options.scan,
-      verbose: runtime.verbose,
-      logger: runtime.logger,
+  const discovered = timeBootstrapSyncStep(runtime.logger, "discovery scan", () => {
+      return discoverBootstrapFiles({
+          dir,
+          scan: runtime.options.scan,
+          verbose: runtime.verbose,
+          logger: runtime.logger,
+      });
   });
   const fileCodeCache = new Map<string, string|null>();
   const importRevision = nextImportRevision();
 
   runtime.lastSummary.scanned += discovered.summary.scanned;
-  for (const [index, file] of discovered.ordered.entries()) {
-    await loadScannedFile(runtime, fileCodeCache, importRevision, file, index);
-  }
+  const loaded = await timeBootstrapStep(runtime.logger, "scanned-file import-resolve", () => {
+      return Promise.all(discovered.ordered.map((file, index) => {
+            return loadScannedFile(runtime, fileCodeCache, importRevision, file, index);
+      }));
+    }, { file_count: discovered.ordered.length });
+
+  timeBootstrapSyncStep(runtime.logger, "dynamic subsystem registration", () => {
+      registerLoadedScannedFiles(runtime, loaded);
+    }, { file_count: loaded.length });
 
   runtime.scanGeneration += discovered.ordered.length + 1;
 }
@@ -45,43 +68,38 @@ async function loadScannedFile(
   runtime: BootstrapRuntimeImpl,
   fileCodeCache: Map<string, string|null>,
   importRevision: number,
-  file: {
-    abs: string;
-    relativePath: string;
-  },
+  file: ScannedFile,
   index: number,
-): Promise<void> {
+): Promise<LoadedScannedFile> {
   if (runtime.verbose) {
     runtime.logger.info(BOOTSTRAP_LOG_GROUP, `load :: ${file.relativePath}`);
   }
 
   const imported = await importScannedFile(runtime, file, importRevision);
   if (!imported) {
-    return;
+    return { status: "failed" };
   }
 
   const lifecycleSubsystem = resolveLifecycleSubsystemExport(imported, file.relativePath, runtime.scanGeneration + index);
   if (lifecycleSubsystem) {
-    runtime.dynamicSubsystems.push(lifecycleSubsystem);
-    return;
+    return {
+      status: "subsystem",
+      subsystem: lifecycleSubsystem,
+    };
   }
 
-  await loadLegacyScannedModule(runtime, fileCodeCache, imported, file, index);
+  return loadLegacyScannedModule(runtime, fileCodeCache, imported, file, index);
 }
 
 async function importScannedFile(
   runtime: BootstrapRuntimeImpl,
-  file: {
-    abs: string;
-    relativePath: string;
-  },
+  file: ScannedFile,
   importRevision: number,
 ): Promise<unknown|null> {
   try {
     return await loadModuleFile(file.abs, importRevision);
   } catch (error) {
     runtime.logger.error(BOOTSTRAP_LOG_GROUP, `load-failed :: ${file.relativePath}: ${formatError(error)}`);
-    runtime.lastSummary.failed += 1;
     return null;
   }
 }
@@ -90,29 +108,39 @@ async function loadLegacyScannedModule(
   runtime: BootstrapRuntimeImpl,
   fileCodeCache: Map<string, string|null>,
   imported: unknown,
-  file: {
-    abs: string;
-    relativePath: string;
-  },
+  file: ScannedFile,
   index: number,
-): Promise<void> {
-  const code = readFileCached(fileCodeCache, file.abs);
+): Promise<LoadedScannedFile> {
   const handler = resolveModuleHandler(imported);
   if (!handler) {
     if (runtime.verbose) {
       runtime.logger.info(BOOTSTRAP_LOG_GROUP, `skip (no-handler) :: ${file.relativePath}`);
     }
 
-    runtime.lastSummary.skipped += 1;
-    return;
+    return { status: "skipped" };
   }
 
+  const code = readFileCached(fileCodeCache, file.abs);
   const paramsOverride = extractParamsOverrideFromFile({
       code,
       exportShape: handler.exportShape,
       runtimeFn: handler.runtimeFn,
   });
-  runtime.dynamicSubsystems.push(createLegacyScannedSubsystem(runtime, file.relativePath, handler, paramsOverride, index));
+  return {
+    status: "subsystem",
+    subsystem: createLegacyScannedSubsystem(runtime, file.relativePath, handler, paramsOverride, index),
+  };
+}
+
+function registerLoadedScannedFiles(
+  runtime: BootstrapRuntimeImpl,
+  loaded: LoadedScannedFile[],
+): void {
+  for (const item of loaded) {
+    if (item.status === "subsystem") runtime.dynamicSubsystems.push(item.subsystem);
+    else if (item.status === "skipped") runtime.lastSummary.skipped += 1;
+    else runtime.lastSummary.failed += 1;
+  }
 }
 
 function createLegacyScannedSubsystem(

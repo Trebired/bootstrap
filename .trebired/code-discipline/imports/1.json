@@ -47,5 +47,6 @@
   "#ubr96cc9bt5d": "./scripts/prepare-dist.mjs",
   "#vj81fygeflfz": "./src/core/runtime/lifecycle_logging.ts",
   "#vl1kc579x5ul": "./src/utils/env.ts",
-  "#wdzno919if5j": "./src/core/runtime/shutdown/report.ts"
+  "#wdzno919if5j": "./src/core/runtime/shutdown/report.ts",
+  "#ym3bobdy5tbb": "./src/core/runtime/timing.ts"
 }

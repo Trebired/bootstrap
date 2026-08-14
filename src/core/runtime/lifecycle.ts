@@ -12,15 +12,23 @@ import { loadScannedSubsystems } from "./scan.js";
 import { nowIso, orderSubsystems } from "./shared.js";
 import { buildShutdownReport, formatStepId } from "./shutdown/report.js";
 import { runRuntimeStep } from "./steps.js";
+import { timeBootstrapStep, timeBootstrapSyncStep } from "./timing.js";
 
 async function doRuntimeBootstrap(runtime: BootstrapRuntimeImpl): Promise<BootstrapRunReport> {
+  const startedAt = performance.now();
   initializeBootstrap(runtime);
-  await loadScannedSubsystems(runtime);
-  const ordered = prepareOrderedSubsystems(runtime);
+  await timeBootstrapStep(runtime.logger, "scanned subsystem load", () => loadScannedSubsystems(runtime));
+  const ordered = timeBootstrapSyncStep(runtime.logger, "subsystem ordering", () => prepareOrderedSubsystems(runtime), {
+      dynamic_count: runtime.dynamicSubsystems.length,
+      static_count: runtime.staticSubsystems.length,
+  });
 
   for (const subsystem of ordered) {
     try {
-      await bootstrapSubsystem(runtime, subsystem);
+      await timeBootstrapStep(runtime.logger, "subsystem bootstrap", () => bootstrapSubsystem(runtime, subsystem), {
+          source: subsystem.source,
+          subsystem_id: subsystem.id,
+      });
     } catch (error) {
       await handleBootstrapFailure(runtime, subsystem.id, error);
       throw createBootstrapFailure(runtime, subsystem.id, error);
@@ -29,6 +37,10 @@ async function doRuntimeBootstrap(runtime: BootstrapRuntimeImpl): Promise<Bootst
 
   finalizeBootstrapState(runtime);
   const report = buildBootstrapReport(runtime);
+  runtime.logger.info("runtime", "bootstrap execution complete", {
+      started_subsystems: runtime.startedSubsystems.length,
+      took_ms: Math.round(performance.now() - startedAt),
+  });
   runtime.emit({
       type: "bootstrap:finish",
       state: runtime.state.state,
