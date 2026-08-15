@@ -1,4 +1,8 @@
-import { isRecord, toNumber, toString } from "#7iidjfwwxm9c";
+import {
+  isRecord,
+  nowIso,
+  toTrimmedString as toString,
+} from "@trebired/utils";
 import type {
   BootstrapContext,
   BootstrapDisposable,
@@ -45,16 +49,17 @@ export type RuntimeState = {
   availability: boolean;
 };
 
-function nowIso(): string {
-  return new Date().toISOString();
-}
-
 function isFunction(value: unknown): value is(...args: unknown[]) => unknown {
   return typeof value === "function";
 }
 
 function hasOwnFunction(obj: unknown, key: string): boolean {
   return Boolean(resolveObjectFunction(obj, key));
+}
+
+function toFiniteNumber(value: unknown): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
 }
 
 function resolveObjectFunction(obj: unknown, key: string): ((...args: unknown[]) => unknown) | null {
@@ -108,7 +113,7 @@ function normalizeSubsystemDefinition(
   return {
     id,
     name: toString(definition.name).trim() || id,
-    order: Number.isFinite(toNumber(definition.order)) ? Number(toNumber(definition.order)) : fallbackOrder,
+    order: Number.isFinite(toFiniteNumber(definition.order)) ? toFiniteNumber(definition.order) : fallbackOrder,
     dependsOn: Array.isArray(definition.dependsOn)
     ? definition.dependsOn.map((item) => String(item).trim()).filter(Boolean)
     : [],
@@ -132,7 +137,7 @@ function resolveLifecycleSubsystemExport(mod: unknown, fallbackId: string, fallb
     return {
       id,
       name: toString(candidateRecord.name).trim() || id,
-      order: Number.isFinite(toNumber(candidateRecord.order)) ? Number(toNumber(candidateRecord.order)) : fallbackOrder,
+      order: Number.isFinite(toFiniteNumber(candidateRecord.order)) ? toFiniteNumber(candidateRecord.order) : fallbackOrder,
       dependsOn: Array.isArray(candidateRecord.dependsOn)
       ? candidateRecord.dependsOn.map((item) => String(item).trim()).filter(Boolean)
       : [],

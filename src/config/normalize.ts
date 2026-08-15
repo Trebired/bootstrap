@@ -3,30 +3,47 @@ import type {
   BootstrapConfigurableOptions,
   NormalizedBootstrapConfig,
 } from "./types.js";
+import { PACKAGE_VERSION } from "#1nadc3z2pnei";
+import {
+  isRecord,
+  toTrimmedString,
+  uniqueStrings,
+} from "@trebired/utils";
+import { resolveForVersion } from "@trebired/utils";
+
+type NormalizeOptions = {
+  configPath?: string;
+  requireForVersion?: boolean;
+};
 
 function defineConfig<TConfig extends BootstrapConfig>(config: TConfig): TConfig {
   return config;
 }
 
-function normalizeConfig(config: BootstrapConfig = {}): NormalizedBootstrapConfig {
+function normalizeConfig(
+  config: BootstrapConfig = {},
+  options: NormalizeOptions = {},
+): NormalizedBootstrapConfig {
   if (!isRecord(config)) {
     throw new Error("bootstrap config must be an object");
   }
 
   return pickDefined({
       dir: normalizeString(config.dir),
+      forVersion: normalizeForVersion(config, options),
       lifecycle: normalizeLifecycle(config.lifecycle),
       scan: normalizeScan(config.scan),
       verbose: typeof config.verbose === "boolean" ? config.verbose : undefined,
-  });
+  }) as NormalizedBootstrapConfig;
 }
 
 function mergeConfigOptions<TOptions extends BootstrapConfigurableOptions>(
   config: NormalizedBootstrapConfig,
   options: TOptions,
 ): TOptions {
+  const { forVersion: _forVersion, ...configOptions } = config;
   return {
-    ...config,
+    ...configOptions,
     ...options,
     lifecycle: mergeObjects(config.lifecycle, options.lifecycle),
     scan: mergeScan(config.scan, options.scan),
@@ -91,19 +108,28 @@ function normalizeNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
+function normalizeForVersion(
+  config: BootstrapConfig,
+  options: NormalizeOptions,
+): string {
+  return resolveForVersion({
+      configPath: options.configPath,
+      forVersion: config.forVersion,
+      label: "bootstrap",
+      packageVersion: PACKAGE_VERSION,
+      requireForVersion: options.requireForVersion,
+  });
+}
+
 function normalizeString(value: unknown): string | undefined {
-  const normalized = typeof value === "string" ? value.trim() : "";
+  const normalized = toTrimmedString(value);
   return normalized || undefined;
 }
 
 function normalizeStringList(value: unknown): string[] | undefined {
   const values = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
-  const normalized = Array.from(new Set(values.map(normalizeString).filter(Boolean) as string[]));
+  const normalized = uniqueStrings(values);
   return normalized.length > 0 ? normalized : undefined;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 function pickDefined<TValue extends Record<string, unknown>>(input: TValue): Partial<TValue> {

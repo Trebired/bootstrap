@@ -4,6 +4,11 @@ All notable changes to `@trebired/bootstrap` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 2.2.1
+
+- Updated shared utilities to `@trebired/utils@^0.4.3`.
+- Replaced local config normalization, value, time, and package metadata helpers with shared utilities.
+
 ## 2.2.0
 
 - Added runtime timing logs for discovery scan, scanned-file import/resolve, dynamic subsystem registration, subsystem ordering, and subsystem bootstrap execution.

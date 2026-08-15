@@ -6,6 +6,7 @@ import type {
 
 type BootstrapConfig = {
   dir?: string;
+  forVersion?: string;
   lifecycle?: Omit<BootstrapLifecycleOptions, "onEvent">;
   scan?: BootstrapScanOptions;
   verbose?: boolean;
@@ -13,6 +14,7 @@ type BootstrapConfig = {
 
 type NormalizedBootstrapConfig = {
   dir?: string;
+  forVersion: string;
   lifecycle?: Omit<BootstrapLifecycleOptions, "onEvent">;
   scan?: BootstrapScanOptions;
   verbose?: boolean;

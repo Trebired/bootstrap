@@ -3,6 +3,7 @@ import fsPromises from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { PACKAGE_VERSION } from "#1nadc3z2pnei";
 import type {
   BootstrapConfig,
   LoadBootstrapConfigOptions,
@@ -12,7 +13,10 @@ import type {
 import { defineConfig, normalizeConfig } from "./normalize.js";
 
 const BOOTSTRAP_PROJECT_CONFIG_PATH = ".trebired/bootstrap/config.ts";
-const EMPTY_CONFIG = Object.freeze(normalizeConfig({}));
+const EMPTY_CONFIG = Object.freeze(normalizeConfig(
+    { forVersion: PACKAGE_VERSION },
+    { requireForVersion: false },
+));
 
 let cachedConfigs = new Map<string, LoadedBootstrapConfig>();
 
@@ -113,7 +117,7 @@ function missingConfig(): LoadedBootstrapConfig {
 
 function loadedConfig(configPath: string, config: BootstrapConfig): LoadedBootstrapConfig {
   return {
-    config: normalizeConfig(config),
+    config: normalizeConfig(config, { configPath, requireForVersion: true }),
     configPath,
     dependencies: [configPath],
   };

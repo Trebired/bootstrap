@@ -6,7 +6,11 @@ import { compareFiles, isAttachFile, isExcludedBySuffix, normalizeSuffixRules } 
 import type { BootstrapOptions, BootstrapScanOptions, NormalizedBootstrapLogger, SuffixRules } from "#63np0sf1s6f9";
 import { formatError } from "#7vfj5fhk8sp9";
 import { isDir, relFromRoot } from "#borism6zb02o";
-import { cleanStringList, isRecord, toString } from "#7iidjfwwxm9c";
+import {
+  isRecord,
+  toTrimmedString,
+  uniqueStrings,
+} from "@trebired/utils";
 import { walkBootstrapFiles } from "#5m1qr8zj0sdu";
 import { matchesRule, normalizeMatchValue } from "#gfbbrr5jgv5e";
 
@@ -53,6 +57,11 @@ function normalizeExcludeSuffixes(values: Iterable<unknown>|null | undefined): s
   return cleanStringList(values).map((value) => value.toLowerCase());
 }
 
+function cleanStringList(values: Iterable<unknown>|null | undefined): string[] {
+  if (!values) return [];
+  return uniqueStrings(typeof values === "string" ? [values] : Array.from(values));
+}
+
 function normalizeScanConfig(scan: unknown): NormalizedScanConfig {
   const cfg = isRecord(scan) ? scan as BootstrapScanOptions : {};
   const dirs = isRecord(cfg.dirs) ? cfg.dirs : {};
@@ -65,12 +74,12 @@ function normalizeScanConfig(scan: unknown): NormalizedScanConfig {
     filesInclude: normalizeMatchSet(files.include),
     filesExclude: normalizeMatchSet(files.exclude),
     excludeSuffixes: normalizeExcludeSuffixes(files.excludeSuffixes),
-    lastSuffix: toString(files.lastSuffix).toLowerCase() || DEFAULT_LAST_SUFFIX,
+    lastSuffix: toTrimmedString(files.lastSuffix).toLowerCase() || DEFAULT_LAST_SUFFIX,
   };
 }
 
 function resolveDirOption(options: Pick<BootstrapOptions, "dir">): string {
-  const dir = toString(options.dir);
+  const dir = toTrimmedString(options.dir);
   if (!dir) return "";
   return path.resolve(dir);
 }
