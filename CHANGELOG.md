@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.5
+
+- Removed dead `config.creator` from `package.json`.
+- Updated shared utilities to `@trebired/utils@^0.6.0` and replaced the removed `readPackageIdentity()` with `readPackageJsonUrl()` + `readOrganizationIdentity()` + `packageSlug()`/`joinLogGroup()`. No change to the exported `PACKAGE_NAME`/`PACKAGE_VERSION`/`PACKAGE_ORGANIZATION_NAME`/`PACKAGE_SLUG`/`buildPackageLogGroup()` values.
+
 ## 2.2.2
 
 - Updated shared utilities to `@trebired/utils@^0.4.4`.
