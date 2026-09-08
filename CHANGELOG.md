@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0
+
+- Changed the `forVersion` check to pass the config object to `resolveForVersion()`, which `@trebired/utils` 0.9.0 requires. A config that does not declare `forVersion` as its first key now fails instead of loading.
+- Updated the `@trebired/utils` dependency range to `^0.9.0`.
+
 ## 2.2.8
 
 ### Changed
