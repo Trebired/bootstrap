@@ -2,6 +2,12 @@
 
 ## 2.3.0
 
+- Fixed the package log group losing its prefix. The shipped `.trebired/logger/config.ts` still declared `forVersion: "2.5.26"`, a minor behind the logger it resolves against, so the version check rejected it and every group fell back to a bare name such as `lifecycle` instead of `trebired.bootstrap.lifecycle`.
+- Changed the `forVersion` check to pass the config object, which `@trebired/utils` 0.9.x uses to require `forVersion` as the first key of a config file.
+- Updated the `@trebired/utils` dependency range to `^0.9.2`.
+
+## 2.3.0
+
 - Changed the `forVersion` check to pass the config object to `resolveForVersion()`, which `@trebired/utils` 0.9.0 requires. A config that does not declare `forVersion` as its first key now fails instead of loading.
 - Updated the `@trebired/utils` dependency range to `^0.9.0`.
 
