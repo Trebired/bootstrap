@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.1
+
+- Updated the `@trebired/utils` dependency range to `^0.9.3`. 2.3.0 pinned `^0.9.2`, whose `forVersion` check still required the config object and failed for packages that do not pass one.
+
 ## 2.3.0
 
 - Fixed the package log group losing its prefix. The shipped `.trebired/logger/config.ts` still declared `forVersion: "2.5.26"`, a minor behind the logger it resolves against, so the version check rejected it and every group fell back to a bare name such as `lifecycle` instead of `trebired.bootstrap.lifecycle`.
