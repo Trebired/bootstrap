@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.2
+
+- Updated the shipped `.trebired/logger/config.ts` `forVersion` to `2.7.0`. It still named 2.6.3, so under `@trebired/logger` 2.7 the version check threw and the `trebired.bootstrap` log prefix was silently dropped: shutdown logged under `shutdown` rather than `trebired.bootstrap.shutdown`.
+
 ## 2.3.1
 
 - Updated the `@trebired/utils` dependency range to `^0.9.3`. 2.3.0 pinned `^0.9.2`, whose `forVersion` check still required the config object and failed for packages that do not pass one.
