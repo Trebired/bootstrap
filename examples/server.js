@@ -3,6 +3,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { bootstrap } from "#7l8fl6xuos5s";
+import { resolveLogger } from "@package/logger-adapter";
+
+const log = resolveLogger({ source: "@trebired/bootstrap" });
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dir = path.join(here, "server_bootstrap");
@@ -14,24 +17,6 @@ const app = {
   },
   use(handler) {
     this.routes.push({ method: "USE", route: "*", handler });
-  },
-};
-
-const log = {
-  info(group, message, data) {
-    if (data === undefined) console.log(`[${group}] ${message}`);
-    else console.log(`[${group}] ${message}`, data);
-  },
-  warn(group, message, data) {
-    if (data === undefined) console.warn(`[${group}] ${message}`);
-    else console.warn(`[${group}] ${message}`, data);
-  },
-  error(group, message, data) {
-    if (data === undefined) console.error(`[${group}] ${message}`);
-    else console.error(`[${group}] ${message}`, data);
-  },
-  fail(group, message, data) {
-    this.error(group, message, data);
   },
 };
 

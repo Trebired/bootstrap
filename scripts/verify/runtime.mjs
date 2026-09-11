@@ -5,13 +5,16 @@ import {
   createBootstrap,
   createBootstrapShutdownController,
 } from "../../dist/index.js";
+import { resolveLogger } from "@package/logger-adapter";
+
+const log = resolveLogger({ source: "@trebired/bootstrap" });
 
 async function main() {
   await verifyLifecycleLogger();
   await verifyShutdownController();
   await verifySignalBinding();
   await verifyDisposableCleanup();
-  console.log("Runtime verification succeeded.");
+  log.info("verify.runtime", "Runtime verification succeeded.");
 }
 
 async function verifyLifecycleLogger() {

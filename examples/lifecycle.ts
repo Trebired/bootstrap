@@ -1,4 +1,7 @@
 import { createBootstrap } from "#7l8fl6xuos5s";
+import { resolveLogger } from "@package/logger-adapter";
+
+const log = resolveLogger({ source: "@trebired/bootstrap" });
 
 type FakeServer = {
   listen: () => Promise<void>;
@@ -9,13 +12,13 @@ type FakeServer = {
 function makeServer(): FakeServer {
   return {
     async listen() {
-      console.info("server listening");
+      log.info("example.lifecycle", "server listening");
     },
     async close() {
-      console.info("server closed");
+      log.info("example.lifecycle", "server closed");
     },
     async destroy() {
-      console.info("server destroyed");
+      log.info("example.lifecycle", "server destroyed");
     },
   };
 }
@@ -25,14 +28,18 @@ async function main(): Promise<void> {
       lifecycle: {
         shutdownTimeoutMs: 5_000,
         onEvent(event) {
-          console.info("lifecycle", event.type, event.state, event.subsystemId || "-");
+          log.info("example.lifecycle", "lifecycle event", {
+              type: event.type,
+              state: event.state,
+              subsystemId: event.subsystemId || "-",
+          });
         },
       },
       subsystems: [
         {
           id: "config",
           async bootstrap() {
-            console.info("config loaded");
+            log.info("example.lifecycle", "config loaded");
           },
         },
         {
@@ -55,10 +62,10 @@ async function main(): Promise<void> {
           async degrade(context) {
             context.readiness.disable("draining");
             context.availability.disable("draining");
-            console.info("http draining");
+            log.info("example.lifecycle", "http draining");
           },
           async shutdown() {
-            console.info("http shutdown hook");
+            log.info("example.lifecycle", "http shutdown hook");
           },
         },
       ],
@@ -70,6 +77,6 @@ async function main(): Promise<void> {
 }
 
 main().catch ((error) => {
-    console.error(error);
+    log.error("example.lifecycle", error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
 });

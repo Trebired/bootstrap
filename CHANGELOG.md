@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.3
+
+- Changed the verification scripts and examples to print through `@trebired/logger-adapter` instead of `console` and `process.stdout`.
+- Changed the examples to pass a `@trebired/logger-adapter` logger to `bootstrap()`. `examples/server.js` and `examples/dummy.ts` each built their own console logger.
+
 ## 2.3.2
 
 - Updated the shipped `.trebired/logger/config.ts` `forVersion` to `2.7.0`. It still named 2.6.3, so under `@trebired/logger` 2.7 the version check threw and the `trebired.bootstrap` log prefix was silently dropped: shutdown logged under `shutdown` rather than `trebired.bootstrap.shutdown`.

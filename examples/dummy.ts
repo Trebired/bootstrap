@@ -3,13 +3,9 @@ import os from "node:os";
 import path from "node:path";
 
 import { bootstrap } from "#7l8fl6xuos5s";
+import { resolveLogger } from "@package/logger-adapter";
 
-type DemoLogger = {
-  info(group: string, message: string, data?: unknown): void;
-  warn(group: string, message: string, data?: unknown): void;
-  error(group: string, message: string, data?: unknown): void;
-  fail(group: string, message: string, data?: unknown): void;
-};
+const log = resolveLogger({ source: "@trebired/bootstrap" });
 
 const rootDir = path.join(os.tmpdir(), "@package-bootstrap", "dummy");
 const dir = path.join(rootDir, "src", "backend");
@@ -45,20 +41,6 @@ function resetDemoProject(): void {
   `);
 }
 
-function createConsoleLogger(): DemoLogger {
-  const write = (level: string, group: string, message: string, data?: unknown) => {
-    const suffix = data === undefined ? "" : ` ${JSON.stringify(data)}`;
-    process.stdout.write(`[${level}] ${group} ${message}${suffix}\n`);
-  };
-
-  return {
-    info: (group, message, data) => write("info", group, message, data),
-    warn: (group, message, data) => write("warn", group, message, data),
-    error: (group, message, data) => write("error", group, message, data),
-    fail: (group, message, data) => write("fail", group, message, data),
-  };
-}
-
 async function runDummySystem(): Promise<void> {
   resetDemoProject();
 
@@ -66,7 +48,7 @@ async function runDummySystem(): Promise<void> {
   const summary = await bootstrap({
       dir,
       verbose: true,
-      logger: createConsoleLogger(),
+      logger: log,
       scan: {
         dirs: {
           include: ["database", "http"],
@@ -83,10 +65,10 @@ async function runDummySystem(): Promise<void> {
       state,
   });
 
-  process.stdout.write(`${JSON.stringify({ rootDir, summary, events: state.events }, null, 2)}\n`);
+  log.info("example.dummy", "summary", { rootDir, summary, events: state.events });
 }
 
 runDummySystem().catch ((error) => {
-    process.stderr.write(`${error instanceof Error ? error.stack || error.message : String(error)}\n`);
+    log.error("example.dummy", error instanceof Error ? error.stack || error.message : String(error));
     process.exitCode = 1;
 });
