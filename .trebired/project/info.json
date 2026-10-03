@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "category": "package",
+  "subcategory": "runtime",
+  "status": "active",
+  "npm": "@trebired/bootstrap",
+  "description": {
+    "en": "Ordered boot of an application's subsystems, with readiness and shutdown control.",
+    "cs": "Řízený start podsystémů aplikace včetně kontroly připravenosti a vypínání."
+  }
+}
