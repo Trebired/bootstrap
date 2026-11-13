@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.6
+
+- Fixed reading a module's parameter names. A function without parameters whose body held an arrow function, such as `function attach() { return list.map((item) => item); }`, was read as taking the arrow's parameters, so its `attach` was skipped as missing arguments and never ran. The parameter list is now read from the start of the function with balanced brackets, for functions, methods and arrows alike.
+
 ## 2.3.5
 
 - Raised the dependency ranges to the current releases: `@trebired/logger-adapter` to `^0.8.2`, `@trebired/result` to `^1.4.1`, `@trebired/utils` to `^0.9.7`.
