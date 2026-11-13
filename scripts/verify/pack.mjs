@@ -282,22 +282,22 @@ function createNpmOptions(cwd) {
 
 function shellEscape(value) {
   return `'${String(value).replace(/'/gu, `'\\''`)}'`;
-  }
+}
 
-  function restorePackageJsonFromBackup() {
+function restorePackageJsonFromBackup() {
   execFileSync(process.execPath, [
-  "-e",
-  [
-  "const fs = require('fs');",
-  `const backup = ${JSON.stringify(packageJsonBackupPath)};`,
-  `const target = ${JSON.stringify(path.join(rootDir, "package.json"))};`,
-  "if (fs.existsSync(backup)) {",
-  "  fs.copyFileSync(backup, target);",
-  "}",
-  ].join(" "),
-  ], {
-  stdio: "inherit",
+      "-e",
+      [
+        "const fs = require('fs');",
+        `const backup = ${JSON.stringify(packageJsonBackupPath)};`,
+        `const target = ${JSON.stringify(path.join(rootDir, "package.json"))};`,
+        "if (fs.existsSync(backup)) {",
+        "  fs.copyFileSync(backup, target);",
+        "}",
+      ].join(" "),
+    ], {
+      stdio: "inherit",
   });
-  }
+}
 
-  await main();
+await main();
