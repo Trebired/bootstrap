@@ -25,31 +25,36 @@ function splitParams(raw: unknown): string[] {
   .filter(Boolean);
 }
 
+function balancedParamList(source: string, open: number): string {
+  let depth = 0;
+  let quote = "";
+  for (let index = open; index < source.length; index += 1) {
+    const char = source[index];
+    if (quote) {
+      if (char === "\\") index += 1;
+      else if (char === quote) quote = "";
+      continue;
+    }
+    if (char === "\"" || char === "'" || char === "`") quote = char;
+    else if (char === "(") depth += 1;
+    else if (char === ")" && (depth -= 1) === 0) return source.slice(open + 1, index);
+  }
+  return "";
+}
+
+function leadingParamList(source: string): string {
+  const head = source.replace(/^async\s+/u, "");
+  const single = head.match(/^([A-Za-z_$][A-Za-z0-9_$]*)\s*=>/u);
+  if (single) return single[1];
+  if (head.startsWith("(")) return balancedParamList(head, 0);
+  const named = head.match(/^(?:function\b\s*\*?\s*[A-Za-z0-9_$]*|[A-Za-z_$][A-Za-z0-9_$]*)\s*\(/u);
+  return named ? balancedParamList(head, named[0].length - 1) : "";
+}
+
 function parseParamTokensFromFn(fn: unknown): string[] {
   if (typeof fn !== "function") return [];
-
   const source = getFnSource(fn).trim();
-  if (!source) return [];
-
-  let inside = "";
-  const arrowIdx = source.indexOf("=>");
-  if (arrowIdx !== -1) {
-    const left = source.slice(0, arrowIdx).trim();
-    if (left.startsWith("(")) {
-      const end = left.indexOf(")");
-      if (end !== -1) inside = left.slice(1, end);
-    } else {
-      inside = left;
-    }
-  } else {
-    const open = source.indexOf("(");
-    if (open !== -1) {
-      const close = source.indexOf(")", open + 1);
-      if (close !== -1) inside = source.slice(open + 1, close);
-    }
-  }
-
-  return splitParams(inside);
+  return source ? splitParams(leadingParamList(source)) : [];
 }
 
 function isIdentifierToken(token: string): boolean {

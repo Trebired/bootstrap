@@ -6,6 +6,8 @@ import {
   createBootstrapShutdownController,
 } from "../../dist/index.js";
 import { resolveLogger } from "@package/logger-adapter";
+import { parseParamTokensFromFn } from "../../dist/params/extract.js";
+import { verifyParamParsing } from "./params.mjs";
 
 const log = resolveLogger({ source: "@trebired/bootstrap" });
 
@@ -14,6 +16,7 @@ async function main() {
   await verifyShutdownController();
   await verifySignalBinding();
   await verifyDisposableCleanup();
+  await verifyParamParsing(parseParamTokensFromFn);
   log.info("verify.runtime", "Runtime verification succeeded.");
 }
 

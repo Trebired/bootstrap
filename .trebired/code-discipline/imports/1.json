@@ -17,6 +17,7 @@
   "#6vy99ep5j6l5": "./src/config/normalize.ts",
   "#7d2zjhqfq32s": "./src/types/shutdown-controller.ts",
   "#7l8fl6xuos5s": "./src/index.ts",
+  "#7tcmgqczj3jm": "./scripts/verify/params.mjs",
   "#7vfj5fhk8sp9": "./src/utils/errors.ts",
   "#7x6frcgppchf": "./examples/dummy.ts",
   "#84byqmqnrpqp": "./src/core/runtime/lifecycle.ts",
